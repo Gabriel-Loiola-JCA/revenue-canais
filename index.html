@@ -37,7 +37,7 @@ html { scroll-behavior: smooth; }
 body {
   margin: 0; min-height: 100vh; background: var(--black); color: var(--white);
   font-family: var(--font); font-size: 15px; line-height: 1.5;
-  -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; overflow-x: clip;
 }
 body::before {
   content: ""; position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: .03;
@@ -120,7 +120,7 @@ button { cursor: pointer; }
 .seg { position: relative; display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px; }
 .seg button { position: relative; z-index: 1; border: 0; background: transparent; padding: 5px 12px; border-radius: 999px; font-size: 12px; color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--white); color: var(--black); }
-select.sel { appearance: none; background: var(--black); border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px; font-size: 12px; max-width: 34vw; }
+select.sel { appearance: none; background: var(--black); border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px; font-size: 12px; max-width: 34vw; text-overflow: ellipsis; }
 .cmp { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
 
 /* ---------- KPIs ---------- */
@@ -147,7 +147,7 @@ main { display: grid; padding-bottom: 40px; }
 .sub { font-size: 12px; color: var(--muted); margin: -16px 0 0; }
 .src { font-size: 11px; color: var(--faint); margin: 0; }
 .search { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px; }
-.search input { background: transparent; border: 0; outline: 0; width: 160px; font-size: 12px; }
+.search input { background: transparent; border: 0; outline: 0; width: 160px; max-width: 46vw; min-width: 0; font-size: 12px; }
 .search svg { width: 14px; height: 14px; color: var(--muted); }
 
 /* barras divergentes */
@@ -172,7 +172,7 @@ main { display: grid; padding-bottom: 40px; }
 .mrow { display: grid; grid-template-columns: minmax(96px, 190px) minmax(0, 1fr); gap: 14px; align-items: center; padding-block: 6px; border-top: 1px solid var(--line); }
 .mrow .nm { font-size: 13px; text-align: right; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mbars { display: grid; gap: 3px; }
-.mbar { display: grid; grid-template-columns: 34px minmax(0, 1fr) 170px; gap: 10px; align-items: center; font-size: 12px; }
+.mbar { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 170px); gap: 10px; align-items: center; font-size: 12px; }
 .mbar .k { color: var(--faint); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
 .mbar .track { height: 12px; }
 .mbar .b.neu { background: var(--muted); }
@@ -197,10 +197,14 @@ main { display: grid; padding-bottom: 40px; }
 .ticks span { position: absolute; transform: translateX(-50%); }
 
 /* tabelas */
-.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
-table { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 640px; }
-th, td { padding: 9px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
-th:first-child, td:first-child { text-align: left; }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; container-type: inline-size; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { padding: 9px 8px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); vertical-align: top; }
+th:first-child, td:first-child { text-align: left; white-space: normal; overflow-wrap: anywhere; padding-left: 12px; }
+td small { display: block; color: var(--muted); font-size: 11px; font-weight: 400; }
+/* colunas menos essenciais saem quando falta largura, em vez de criar rolagem lateral */
+@container (max-width: 660px) { .p3 { display: none; } }
+@container (max-width: 460px) { .p2 { display: none; } th, td { padding-inline: 6px; } }
 th { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; cursor: pointer; user-select: none; background: var(--panel); }
 th[aria-sort] { color: var(--white); }
 th[aria-sort="ascending"]::after { content: " ↑"; } th[aria-sort="descending"]::after { content: " ↓"; }
@@ -230,14 +234,16 @@ tfoot td { font-weight: 600; border-top: 1px solid var(--line-strong); border-bo
 .none { font-size: 12px; color: var(--muted); padding-block: 8px; border-top: 1px solid var(--line); margin: 0; }
 
 /* mapa rota × canal */
-.heat { border-collapse: separate; border-spacing: 3px; min-width: 720px; }
+.heat { border-collapse: separate; border-spacing: 3px; table-layout: fixed; }
+.heat th:first-child { width: 30%; } .heat th:last-child { width: 84px; }
 .heat th, .heat td { border: 0; padding: 0; }
-.heat th { background: transparent; cursor: default; padding: 4px 6px; text-align: center; }
-.heat td.r { font-size: 12px; color: var(--muted); text-align: right; padding-right: 8px; }
-.heat td.c { height: 34px; text-align: center; font-size: 11.5px; border-radius: 4px; background: var(--panel); color: var(--faint); }
+.heat th { background: transparent; cursor: default; padding: 4px 2px; text-align: center; white-space: normal; overflow-wrap: anywhere; letter-spacing: .08em; line-height: 1.25; vertical-align: bottom; }
+.heat td.r { font-size: 12px; color: var(--muted); text-align: right; padding: 0 8px 0 0; line-height: 1.25; vertical-align: middle; }
+.heat td.c { height: 34px; vertical-align: middle; white-space: nowrap; overflow: hidden; text-align: center; font-size: 11.5px; border-radius: 4px; background: var(--panel); color: var(--faint); }
 .heat td.c.v { color: var(--white); font-weight: 500; transition: transform .25s var(--ease); cursor: default; }
 .heat td.c.v:hover { transform: scale(1.1); }
-.heat td.tot { font-size: 12px; text-align: right; padding-left: 10px; font-weight: 600; }
+.heat td.tot { font-size: 12px; text-align: right; padding: 0 0 0 6px; font-weight: 600; vertical-align: middle; }
+@container (max-width: 520px) { .heat th:first-child { width: 34%; } .heat th:last-child { width: 60px; } .heat th { font-size: 8.5px; letter-spacing: .04em; } .heat td.c, .heat td.r, .heat td.tot { font-size: 10.5px; } }
 .heat tbody tr:hover td { background: transparent; } .heat tbody tr:hover td.c:not(.v) { background: var(--panel); }
 
 /* conclusões */
@@ -276,7 +282,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 .seg .thumb { position: absolute; top: 2px; bottom: 2px; left: 0; border-radius: 999px; background: var(--white); transition: transform .45s var(--ease), width .45s var(--ease); pointer-events: none; }
 .seg.th button[aria-pressed="true"] { background: transparent; }
 /* cada bloco entra quando chega na tela; as barras só crescem nesse momento */
-.rv > * { opacity: 0; transform: translateY(22px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+.rv > * { opacity: 0; transform: translateY(16px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
 .rv > :nth-child(2) { transition-delay: .1s; } .rv > :nth-child(3) { transition-delay: .2s; } .rv > :nth-child(4) { transition-delay: .3s; }
 .rv.in > * { opacity: 1; transform: none; }
 .rv:not(.in) .b, .rv:not(.in) .rr .m i { animation: none; transform: scaleX(0); }
@@ -437,7 +443,7 @@ body.busy .dz { opacity: .5; pointer-events: none; }
         <div class="div-chart" id="cChart"></div>
         <div class="two" id="cText"></div>
         <div class="tbl-wrap"><table id="cTable"></table></div>
-        <p class="src">TM = receita ÷ bilhetes. Part. = participação na receita do período analisado. Clique no cabeçalho para ordenar.</p>
+        <p class="src">Em cada célula, o número de cima é o período analisado e o de baixo, o anterior. TM = receita ÷ bilhetes. Part. = participação na receita. Clique no cabeçalho para ordenar.</p>
       </div>
     </section>
 
@@ -478,7 +484,7 @@ body.busy .dz { opacity: .5; pointer-events: none; }
         <div class="div-chart" id="rChart"></div>
         <button class="link no-print" id="rMore" type="button" style="justify-self:start" hidden></button>
         <div class="tbl-wrap"><table id="rTable"></table></div>
-        <p class="src">Rotas tratadas por sentido (origem › destino). Clique no cabeçalho para ordenar.</p>
+        <p class="src">Em cada célula, o número de cima é o período analisado e o de baixo, o anterior. Rotas tratadas por sentido (origem › destino). Clique no cabeçalho para ordenar.</p>
       </div>
     </section>
 
@@ -492,8 +498,8 @@ body.busy .dz { opacity: .5; pointer-events: none; }
         </div>
         <div class="cards" id="rpcCards"></div>
         <p class="title-insight" id="heatTitle" style="margin-top:18px"></p>
-        <p class="sub">Mapa rota × canal com as rotas de maior impacto. Célula vazia = sem venda nos dois períodos.</p>
-        <div class="tbl-wrap" style="border:0"><table class="heat" id="heat"></table></div>
+        <p class="sub" id="heatSub"></p>
+        <div class="tbl-wrap" id="heatWrap" style="border:0"><table class="heat" id="heat"></table></div>
       </div>
     </section>
 
@@ -546,7 +552,7 @@ const minBy = (a, k) => a.reduce((x, y) => (x == null || y[k] < x[k] ? y : x), n
 // el.html = "…" só toca no DOM quando o conteúdo mudou: o que não mudou não pisca nem reanima
 Object.defineProperty(Element.prototype, "html", { set(v) { if (this._h === v) return; this._h = v; this.innerHTML = v; } });
 const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const vt = fn => (document.startViewTransition && !calm ? document.startViewTransition(fn) : fn());
+const vt = fn => { if (!document.startViewTransition || calm) return fn(); const t = document.startViewTransition(fn); t.ready?.catch(() => {}); t.finished?.catch(() => {}); }; // transição interrompida não é erro
 // contagem suave de um número até o novo valor
 const prevNum = new Map();
 function countTo(el, key, to, fmt) {
@@ -822,28 +828,26 @@ function divChart(el, rows) {
 function table(el, cols, rows, st, foot) {
   const data = rows.slice();
   if (st.sort) { const c = cols.find(c => c.k === st.sort.k); if (c) data.sort((x, y) => { const u = c.sv(x), v = c.sv(y); return (typeof u === "string" ? u.localeCompare(v, "pt-BR") : (u ?? -Infinity) - (v ?? -Infinity)) * st.sort.dir; }); }
-  el.html = `<thead><tr>${cols.map(c => `<th scope="col" data-k="${c.k}"${st.sort && st.sort.k === c.k ? ` aria-sort="${st.sort.dir > 0 ? "ascending" : "descending"}"` : ""}>${esc(c.h)}</th>`).join("")}</tr></thead>
-    <tbody>${data.map(r => `<tr>${cols.map(c => `<td class="${c.c ? c.c(r) : ""}">${c.f(r)}</td>`).join("")}</tr>`).join("")}</tbody>
-    ${foot ? `<tfoot><tr>${cols.map(c => `<td class="${c.c ? c.c(foot) : ""}">${c.f(foot)}</td>`).join("")}</tr></tfoot>` : ""}`;
+  el.html = `<thead><tr>${cols.map(c => `<th scope="col" class="${c.p ? "p" + c.p : ""}" data-k="${c.k}"${st.sort && st.sort.k === c.k ? ` aria-sort="${st.sort.dir > 0 ? "ascending" : "descending"}"` : ""}>${esc(c.h)}</th>`).join("")}</tr></thead>
+    <tbody>${data.map(r => `<tr>${cols.map(c => `<td class="${c.p ? "p" + c.p + " " : ""}${c.c ? c.c(r) : ""}">${c.f(r)}</td>`).join("")}</tr>`).join("")}</tbody>
+    ${foot ? `<tfoot><tr>${cols.map(c => `<td class="${c.p ? "p" + c.p + " " : ""}${c.c ? c.c(foot) : ""}">${c.f(foot)}</td>`).join("")}</tr></tfoot>` : ""}`;
   el.onclick = e => { const th = e.target.closest("th"); if (!th) return; const k = th.dataset.k; st.sort = { k, dir: st.sort && st.sort.k === k ? -st.sort.dir : k === "n" ? 1 : -1 }; render(); };
 }
 // colunas completas (receita, bilhetes, ticket médio, participação) para canais e rotas
 function fullCols(first) {
-  const s = C.single, R = D.has.rec, B = D.has.bil, a = S.A, b = S.B, tb = C.T.b.rec;
+  const s = C.single, R = D.has.rec, B = D.has.bil, tb = C.T.b.rec;
   const r = o => L(o, "rec"), q = o => L(o, "bil"), t = o => L(o, "tm");
+  const two = (b, a) => b + (s ? "" : `<small>${a}</small>`); // atual em cima, anterior embaixo
   return [
     { k: "n", h: first, f: x => esc(x.n), sv: x => x.n },
-    R && !s && { k: "ra", h: "Receita " + a, f: x => fInt(r(x.o).a), sv: x => r(x.o).a },
-    R && { k: "rb", h: "Receita " + b, f: x => fInt(r(x.o).b), sv: x => r(x.o).b },
+    R && { k: "rb", h: "Receita", f: x => two(fInt(r(x.o).b), fInt(r(x.o).a)), sv: x => r(x.o).b },
     R && !s && { k: "rd", h: "Δ R$", f: x => sg(r(x.o).d) + fInt(Math.abs(r(x.o).d)), sv: x => r(x.o).d, c: x => cls(r(x.o).d) },
     R && !s && { k: "rp", h: "Δ %", f: x => fPct(r(x.o).p), sv: x => r(x.o).p, c: x => cls(r(x.o).d) },
-    B && !s && { k: "ba", h: "Bilh. " + a, f: x => fInt(q(x.o).a), sv: x => q(x.o).a },
-    B && { k: "bb", h: "Bilh. " + b, f: x => fInt(q(x.o).b), sv: x => q(x.o).b },
-    B && !s && { k: "bp", h: "Δ %", f: x => fPct(q(x.o).p), sv: x => q(x.o).p, c: x => cls(q(x.o).d) },
-    R && B && !s && { k: "ta", h: "TM " + a, f: x => fTM(t(x.o).a), sv: x => t(x.o).a },
-    R && B && { k: "tb", h: "TM " + b, f: x => fTM(t(x.o).b), sv: x => t(x.o).b },
-    R && B && !s && { k: "tp", h: "Δ %", f: x => fPct(t(x.o).p), sv: x => t(x.o).p, c: x => cls(t(x.o).d) },
-    R && { k: "sh", h: "Part.", f: x => (tb ? nf1.format(x.o.b.rec / tb * 100) + "%" : "–"), sv: x => x.o.b.rec },
+    B && { k: "bb", h: "Bilhetes", p: R ? 2 : 0, f: x => two(fInt(q(x.o).b), fInt(q(x.o).a)), sv: x => q(x.o).b },
+    B && !s && { k: "bp", h: "Δ %", p: R ? 2 : 0, f: x => fPct(q(x.o).p), sv: x => q(x.o).p, c: x => cls(q(x.o).d) },
+    R && B && { k: "tb", h: "TM", p: 3, f: x => two(fTM(t(x.o).b), fTM(t(x.o).a)), sv: x => t(x.o).b },
+    R && B && !s && { k: "tp", h: "Δ %", p: 3, f: x => fPct(t(x.o).p), sv: x => t(x.o).p, c: x => cls(t(x.o).d) },
+    R && { k: "sh", h: "Part.", p: 3, f: x => (tb ? nf1.format(x.o.b.rec / tb * 100) + "%" : "–"), sv: x => x.o.b.rec },
   ].filter(Boolean);
 }
 // frase-título de um conjunto de linhas
@@ -1023,15 +1027,17 @@ function renderRPC() {
   }).join("");
 
   // mapa rota × canal
-  const key = s ? "b" : "d", routes = new Map();
-  for (const [kk, o] of C.cr) { const [c, r] = kk.split(SEP); if (!def.includes(c)) continue; const v = L(o, k)[key]; if (!v) continue; (routes.get(r) || routes.set(r, {}).get(r))[c] = v; }
+  const key = s ? "b" : "d", routes = new Map(), hw = $("#heatWrap").clientWidth || 800;
+  const tight = hw < 520, hc = def.slice(0, Math.max(2, Math.min(8, Math.floor(tight ? (hw * .66 - 60) / 46 : (hw * .7 - 84) / 58)))); // só os canais que cabem sem rolagem lateral
+  $("#heatSub").textContent = `Mapa rota × canal com as rotas de maior impacto${hc.length < all.length ? `, nos ${hc.length} maiores canais` : ""}. Célula vazia = sem ${s ? "venda" : "variação"}.`;
+  for (const [kk, o] of C.cr) { const [c, r] = kk.split(SEP); if (!hc.includes(c)) continue; const v = L(o, k)[key]; if (!v) continue; (routes.get(r) || routes.set(r, {}).get(r))[c] = v; }
   const list = [...routes].map(([n, m]) => ({ n, m, s: Object.values(m).reduce((a, b) => a + b, 0), w: Object.values(m).reduce((a, b) => a + Math.abs(b), 0) })).sort((x, y) => y.w - x.w).slice(0, 16).sort((x, y) => y.s - x.s);
   const hmax = Math.max(1, ...list.flatMap(r => Object.values(r.m).map(Math.abs))), light = document.documentElement.dataset.mode === "light";
   const short = v => { const a = Math.abs(v); return (s ? "" : sg(v)) + (k === "bil" ? nf0.format(a) : a >= 1e6 ? nf1.format(a / 1e6) + "M" : a >= 1000 ? nf1.format(a / 1000) + "k" : nf0.format(a)); };
-  $("#heat").html = `<thead><tr><th></th>${def.map(c => `<th class="eyebrow">${esc(c)}</th>`).join("")}<th class="eyebrow" style="text-align:right">Soma</th></tr></thead><tbody>` +
-    list.map(r => `<tr><td class="r">${esc(r.n)}</td>${def.map(c => { const v = r.m[c]; if (v == null) return `<td class="c">·</td>`;
+  $("#heat").html = `<thead><tr><th></th>${hc.map(c => `<th class="eyebrow">${esc(c)}</th>`).join("")}<th class="eyebrow" style="text-align:right">Soma</th></tr></thead><tbody>` +
+    list.map(r => `<tr><td class="r">${esc(r.n)}</td>${hc.map(c => { const v = r.m[c]; if (v == null) return `<td class="c">·</td>`;
       const al = (.14 + .76 * Math.sqrt(Math.abs(v) / hmax)) * (light ? .85 : 1), rgb = s ? "143,143,139" : v > 0 ? "79,158,161" : "236,90,85";
-      return `<td class="c v" style="background:rgba(${rgb},${al.toFixed(2)})" data-tip="${esc(c)} · ${esc(r.n)}: ${s ? fV(v, k) : fD(v, k)}">${short(v)}</td>`; }).join("")}<td class="tot ${s ? "" : cls(r.s)}">${s ? fV(r.s, k) : fD(r.s, k)}</td></tr>`).join("") + "</tbody>";
+      return `<td class="c v" style="background:rgba(${rgb},${al.toFixed(2)})" data-tip="${esc(c)} · ${esc(r.n)}: ${s ? fV(v, k) : fD(v, k)}">${short(v)}</td>`; }).join("")}<td class="tot ${s ? "" : cls(r.s)}">${tight ? short(r.s) : s ? fV(r.s, k) : fD(r.s, k)}</td></tr>`).join("") + "</tbody>";
   const mg = migration();
   $("#heatTitle").textContent = mg ? `${mg.n}: ${mg.up} ganha ${fV(mg.g, k)} enquanto ${mg.dn} perde ${fV(Math.abs(mg.l), k)}` : s ? `Receita por rota e canal em ${S.B}` : "Onde cada canal mexeu em cada rota";
 }
@@ -1149,7 +1155,7 @@ $("#menu").addEventListener("click", e => {
 });
 
 /* ---------- movimento: revelar ao rolar, seletor deslizante, dica flutuante, progresso ---------- */
-const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .06, rootMargin: "0px 0px -6% 0px" }) : null;
+const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0, rootMargin: "0px 0px -10% 0px" }) : null;
 function reveal() { document.querySelectorAll(".rv").forEach(e => { e.classList.remove("in"); if (io) { io.unobserve(e); io.observe(e); } else e.classList.add("in"); }); }
 function thumbs() {
   document.querySelectorAll(".seg").forEach(seg => {
@@ -1159,7 +1165,7 @@ function thumbs() {
     t.style.width = b.offsetWidth + "px"; t.style.transform = `translateX(${b.offsetLeft}px)`; seg.classList.add("th");
   });
 }
-addEventListener("resize", thumbs); document.fonts?.ready.then(thumbs);
+let rzT, rzW = innerWidth; addEventListener("resize", () => { thumbs(); clearTimeout(rzT); rzT = setTimeout(() => { if (innerWidth !== rzW && D.recs.length) { rzW = innerWidth; render(); } }, 200); }); document.fonts?.ready.then(thumbs);
 const tip = $("#tip"); let tipEl = null;
 const tipOff = () => { if (tipEl) { tip.classList.remove("on"); tipEl = null; } };
 addEventListener("mousemove", e => {

@@ -1,0 +1,1181 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revenue · Vendas por canal e rota</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-60 -60 1056 741'%3E%3Crect x='-60' y='-220' width='1056' height='1056' rx='180' fill='%23000'/%3E%3Cpath fill='%23fff' d='M0 436 256 318V621H0zM340 276 596 158V621H340zM680 118 936 0V621H680z'/%3E%3Cpath fill='%23ec5a55' d='M256 318 340 421V621L256 516z'/%3E%3Cpath fill='%234f9ea1' d='M596 158 680 256V616L596 513z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Padrão Revenue: preto puro, grão sutil, Inter, teal = ganho, vermelho = queda, cinza = contexto.
+   Cabeçalho grande, barra de módulos fixa, módulos empilhados. Tudo calculado a partir do arquivo carregado. */
+:root {
+  color-scheme: dark;
+  --black: #000; --panel: #0b0b0b; --panel-2: #121212;
+  --white: #f5f5f2; --muted: #8f8f8b; --faint: #55554f;
+  --line: rgba(255,255,255,.1); --line-strong: rgba(255,255,255,.24);
+  --red: #ec5a55; --teal: #4f9ea1; --red-dim: rgba(236,90,85,.18); --teal-dim: rgba(79,158,161,.18);
+  --pos-text: var(--teal); --neg-text: var(--red);
+  --gray-bar: #3a3a37; --bar-bg: rgba(0,0,0,.86);
+  --font: Inter, ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --pad: clamp(16px, 4.4vw, 72px);
+  --ease: cubic-bezier(.16,1,.3,1);
+}
+:root[data-mode="light"] {
+  color-scheme: light;
+  --black: #f7f7f3; --panel: #fff; --panel-2: #f0f0eb;
+  --white: #151514; --muted: #6a6a65; --faint: #9c9c96;
+  --line: rgba(0,0,0,.09); --line-strong: rgba(0,0,0,.2);
+  --red-dim: rgba(236,90,85,.14); --teal-dim: rgba(79,158,161,.14);
+  --pos-text: #377073; --neg-text: #c2443f;
+  --gray-bar: #d5d5cf; --bar-bg: rgba(247,247,243,.9);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; min-height: 100vh; background: var(--black); color: var(--white);
+  font-family: var(--font); font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: .03;
+  background-image: repeating-radial-gradient(circle at 22% 18%, transparent 0, rgba(255,255,255,.42) .55px, transparent 1px, transparent 3px);
+  background-size: 6px 7px; mix-blend-mode: soft-light;
+}
+::selection { background: var(--white); color: var(--black); }
+a { color: inherit; text-decoration: none; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 1px solid var(--white); outline-offset: 3px; }
+[hidden] { display: none !important; }
+.eyebrow, .lbl { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.wrap { padding-inline: var(--pad); }
+.up { color: var(--pos-text); } .down { color: var(--neg-text); }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.pill.up { background: var(--teal-dim); } .pill.down { background: var(--red-dim); }
+
+.brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 600; letter-spacing: .34em; font-size: 12px; text-transform: uppercase; }
+.brand svg { height: 26px; width: auto; display: block; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--line-strong); border-radius: 999px;
+  padding: 8px 14px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; transition: background .25s, color .25s, border-color .25s;
+}
+.btn:hover, .btn.pri { background: var(--white); color: var(--black); border-color: var(--white); }
+.btn svg { width: 14px; height: 14px; }
+.btn[disabled] { opacity: .45; pointer-events: none; }
+
+/* ---------- entrada ---------- */
+.start { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; padding: 24px var(--pad); }
+.start-top { display: flex; justify-content: space-between; align-items: center; }
+.start-mid { align-self: center; justify-self: center; width: min(680px, 100%); text-align: center; }
+.start-mid > svg { height: clamp(90px, 16vw, 150px); width: auto; margin-bottom: 30px; }
+.start h1 { font-size: clamp(34px, 6vw, 68px); line-height: .98; letter-spacing: -.045em; font-weight: 600; margin: 0 0 14px; }
+.start p { color: var(--muted); margin: 0 auto; max-width: 46ch; }
+.dz { display: block; width: 100%; margin: 34px 0 22px; padding: 42px 24px; background: transparent; border: 1px dashed var(--line-strong); border-radius: 18px; transition: border-color .25s, background .25s; }
+.dz:hover { border-color: var(--white); background: var(--panel); }
+.dz b { display: block; font-weight: 500; font-size: 16px; }
+.dz span { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
+.links { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; font-size: 13px; }
+.link { background: none; border: 0; padding: 0 0 1px; color: var(--muted); border-bottom: 1px solid var(--line-strong); }
+.link:hover { color: var(--white); }
+.start small { color: var(--faint); font-size: 12px; }
+
+/* ---------- topo e abertura ---------- */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-block: 24px; }
+.export { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: clamp(24px, 5vw, 80px); align-items: end; padding-block: clamp(28px, 6vw, 84px) clamp(24px, 4vw, 48px); }
+.hero h1 { font-size: clamp(38px, 6.6vw, 96px); line-height: .95; letter-spacing: -.045em; font-weight: 600; margin: 14px 0 0; text-wrap: balance; }
+.hero h1 span { display: block; color: var(--muted); font-weight: 500; }
+.hero .lead { color: var(--muted); max-width: 46ch; margin: 0; }
+.hero .lead b { color: var(--white); font-weight: 600; }
+
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.pop { position: absolute; right: 0; top: calc(100% + 8px); z-index: 45; width: min(320px, 86vw); padding: 8px; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 14px; box-shadow: 0 18px 50px rgba(0,0,0,.4); }
+.pop .eyebrow { padding: 8px 10px 4px; }
+.pop .it { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 8px 10px; border-radius: 8px; font-size: 13px; }
+.pop .it:hover { background: var(--panel-2); }
+.pop hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0; }
+.file { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 13px; }
+.file span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file small { color: var(--muted); }
+.file button { background: none; border: 0; color: var(--muted); padding: 0 4px; font-size: 16px; line-height: 1; }
+.file button:hover { color: var(--red); }
+
+/* ---------- barra de módulos ---------- */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; background: var(--bar-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-block: 1px solid var(--line); display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding-block: 12px;
+}
+.bar .sp { flex: 1; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line-strong); background: transparent; border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--muted); transition: all .2s; }
+.chip:hover { color: var(--white); }
+.chip[aria-pressed="true"] { background: var(--white); color: var(--black); border-color: var(--white); }
+.chip.sm { padding: 4px 10px; font-size: 11px; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px; }
+.seg button { border: 0; background: transparent; padding: 5px 12px; border-radius: 999px; font-size: 12px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--white); color: var(--black); }
+select.sel { appearance: none; background: var(--black); border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px; font-size: 12px; max-width: 34vw; }
+.cmp { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+
+/* ---------- KPIs ---------- */
+.kpi-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 34px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+.kpi { padding: 26px 22px 26px 0; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.kpi + .kpi { border-left: 1px solid var(--line); padding-left: 22px; }
+.kpi .v { font-size: clamp(26px, 3.4vw, 44px); font-weight: 600; letter-spacing: -.035em; line-height: 1.05; }
+.kpi .v small { font-size: .45em; color: var(--muted); font-weight: 500; letter-spacing: 0; margin-right: 4px; }
+.kpi .d { font-size: 13px; color: var(--muted); }
+.decomp { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: clamp(20px, 4vw, 64px); padding-block: 30px; border-bottom: 1px solid var(--line); }
+.decomp h3 { margin: 8px 0 6px; font-size: 17px; letter-spacing: -.01em; font-weight: 600; text-wrap: balance; }
+.decomp p { margin: 0; color: var(--muted); font-size: 13px; }
+
+/* ---------- módulos ---------- */
+main { display: grid; padding-bottom: 40px; }
+.mod { border-bottom: 1px solid var(--line); padding-block: clamp(36px, 5vw, 64px); display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: clamp(20px, 4vw, 64px); }
+.mod-head { display: grid; gap: 12px; align-content: start; position: sticky; top: 84px; align-self: start; }
+.mod-head h2 { font-size: clamp(22px, 2.4vw, 30px); line-height: 1.12; letter-spacing: -.03em; font-weight: 600; margin: 0; text-wrap: balance; }
+.mod-head p { margin: 0; color: var(--muted); font-size: 14px; max-width: 42ch; }
+.mod-body { display: grid; gap: 22px; min-width: 0; }
+.ctl { display: flex; gap: 10px 14px; flex-wrap: wrap; align-items: center; }
+.title-insight { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
+.sub { font-size: 12px; color: var(--muted); margin: -16px 0 0; }
+.src { font-size: 11px; color: var(--faint); margin: 0; }
+.search { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px; }
+.search input { background: transparent; border: 0; outline: 0; width: 160px; font-size: 12px; }
+.search svg { width: 14px; height: 14px; color: var(--muted); }
+
+/* barras divergentes */
+.div-chart { display: grid; gap: 4px; }
+.drow { display: grid; grid-template-columns: minmax(96px, 230px) minmax(0, 1fr) minmax(108px, auto); gap: 14px; align-items: center; min-height: 26px; animation: rise .5s var(--ease) both; animation-delay: calc(var(--i, 0) * 18ms); }
+.drow .nm { font-size: 13px; color: var(--muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drow.hi .nm { color: var(--white); }
+.track { position: relative; height: 18px; }
+.track .zero { position: absolute; top: -4px; bottom: -4px; width: 1px; background: var(--line-strong); }
+.track .b { position: absolute; top: 0; bottom: 0; background: var(--gray-bar); border-radius: 2px; animation: grow .7s var(--ease) both; transform-origin: left; }
+.track .b.neg { transform-origin: right; }
+.drow.hi .b.pos, .mbar .b.pos { background: var(--teal); }
+.drow.hi .b.neg, .mbar .b.neg { background: var(--red); }
+.drow.hi .b.neu { background: var(--white); }
+.drow .val { font-size: 12.5px; white-space: nowrap; }
+.drow .val em { font-style: normal; color: var(--muted); margin-left: 6px; font-weight: 400; }
+.drow.hi .val { font-weight: 600; }
+
+/* mês a mês */
+.mrow { display: grid; grid-template-columns: minmax(96px, 190px) minmax(0, 1fr); gap: 14px; align-items: center; padding-block: 6px; border-top: 1px solid var(--line); }
+.mrow .nm { font-size: 13px; text-align: right; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mbars { display: grid; gap: 3px; }
+.mbar { display: grid; grid-template-columns: 34px minmax(0, 1fr) 170px; gap: 10px; align-items: center; font-size: 12px; }
+.mbar .k { color: var(--faint); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+.mbar .track { height: 12px; }
+.mbar .b.neu { background: var(--muted); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+/* halteres do mix */
+.dumb { display: grid; gap: 2px; }
+.dumb-axis, .drow2 { display: grid; grid-template-columns: minmax(96px, 170px) minmax(0, 1fr) minmax(130px, auto); gap: 14px; align-items: center; }
+.drow2 { min-height: 34px; border-top: 1px solid var(--line); }
+.drow2 .nm { font-size: 13px; color: var(--muted); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dtrack { position: relative; height: 18px; }
+.dtrack .ln { position: absolute; top: 8px; height: 2px; background: var(--line-strong); }
+.dtrack .dot { position: absolute; top: 3px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; }
+.dtrack .dot.a { border: 1.5px solid var(--muted); background: var(--black); }
+.dtrack .dot.b { background: var(--muted); }
+.drow2.up .dot.b, .drow2.up .ln { background: var(--teal); }
+.drow2.down .dot.b, .drow2.down .ln { background: var(--red); }
+.drow2 .val { font-size: 12.5px; white-space: nowrap; }
+.dumb-axis { font-size: 10px; color: var(--faint); }
+.ticks { position: relative; height: 14px; }
+.ticks span { position: absolute; transform: translateX(-50%); }
+
+/* tabelas */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 640px; }
+th, td { padding: 9px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; cursor: pointer; user-select: none; background: var(--panel); }
+th[aria-sort] { color: var(--white); }
+th[aria-sort="ascending"]::after { content: " ↑"; } th[aria-sort="descending"]::after { content: " ↓"; }
+tbody tr:hover td { background: var(--panel-2); }
+tfoot td { font-weight: 600; border-top: 1px solid var(--line-strong); border-bottom: 0; background: var(--panel); }
+
+/* rotas por canal */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 16px; min-width: 0; container-type: inline-size; align-content: start; }
+.card-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.card-h h3 { margin: 0; font-size: 20px; letter-spacing: -.02em; font-weight: 600; }
+.card-h span { font-size: 12px; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.cols.one { grid-template-columns: minmax(0, 1fr); }
+.col { min-width: 0; }
+.col h4, .two h4 { margin: 0 0 8px; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; font-weight: 500; }
+.rr { display: grid; gap: 4px; padding-block: 8px; border-top: 1px solid var(--line); }
+.rr > * { min-width: 0; }
+.rr .t { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline; font-size: 12.5px; line-height: 1.35; }
+.rr .t span:first-child { overflow-wrap: anywhere; }
+.rr .t b { font-weight: 600; white-space: nowrap; }
+.rr .m { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.rr .m i { display: block; height: 100%; border-radius: 2px; }
+.rr .x { font-size: 11px; color: var(--muted); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.rr .x span:last-child { white-space: nowrap; }
+@container (max-width: 470px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.none { font-size: 12px; color: var(--muted); padding-block: 8px; border-top: 1px solid var(--line); margin: 0; }
+
+/* mapa rota × canal */
+.heat { border-collapse: separate; border-spacing: 3px; min-width: 720px; }
+.heat th, .heat td { border: 0; padding: 0; }
+.heat th { background: transparent; cursor: default; padding: 4px 6px; text-align: center; }
+.heat td.r { font-size: 12px; color: var(--muted); text-align: right; padding-right: 8px; }
+.heat td.c { height: 34px; text-align: center; font-size: 11.5px; border-radius: 4px; background: var(--panel); color: var(--faint); }
+.heat td.c.v { color: var(--white); font-weight: 500; }
+.heat td.tot { font-size: 12px; text-align: right; padding-left: 10px; font-weight: 600; }
+.heat tbody tr:hover td { background: transparent; } .heat tbody tr:hover td.c:not(.v) { background: var(--panel); }
+
+/* conclusões */
+.ins { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); border-top: 1px solid var(--line); }
+.ins article { padding: 20px 20px 20px 0; border-bottom: 1px solid var(--line); display: grid; gap: 8px; align-content: start; }
+.ins h3 { margin: 0; font-size: 16px; letter-spacing: -.01em; font-weight: 600; }
+.ins p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.ins .tag { width: 22px; height: 3px; border-radius: 2px; }
+.notes { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; display: grid; gap: 6px; max-width: 80ch; }
+.notes b, .two ul b { color: var(--white); font-weight: 600; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+.two ul { margin: 0; padding-left: 16px; color: var(--muted); font-size: 13.5px; display: grid; gap: 6px; }
+
+footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 28px; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+
+/* sobreposições */
+.veil { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: var(--bar-bg); backdrop-filter: blur(6px); pointer-events: none; opacity: 0; transition: opacity .2s; }
+.veil.on { opacity: 1; }
+.veil div { border: 1px dashed var(--white); border-radius: 18px; padding: 40px 56px; font-size: 18px; }
+.toast { position: fixed; left: 50%; bottom: 28px; z-index: 80; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--white); color: var(--black); padding: 10px 18px; border-radius: 999px; font-size: 13px; transition: all .35s var(--ease); max-width: 90vw; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+dialog { border: 1px solid var(--line-strong); border-radius: 18px; background: var(--panel); color: var(--white); padding: 26px; width: min(520px, 92vw); }
+dialog::backdrop { background: rgba(0,0,0,.6); backdrop-filter: blur(4px); }
+dialog h2 { margin: 0 0 6px; font-size: 20px; letter-spacing: -.02em; font-weight: 600; }
+dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+.map { display: grid; grid-template-columns: 110px 1fr; gap: 10px 14px; align-items: center; font-size: 13px; }
+.map select { width: 100%; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }
+.dlg-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+@keyframes grow { from { transform: scaleX(0); } }
+@media (max-width: 960px) {
+  .mod, .decomp, .hero { grid-template-columns: 1fr; }
+  .mod-head { position: static; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi:nth-child(3) { border-left: 0; padding-left: 0; }
+  .kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 600px) {
+  .drow { grid-template-columns: 92px minmax(0, 1fr); }
+  .drow .val { grid-column: 2; margin-top: -4px; }
+  .dumb-axis, .drow2 { grid-template-columns: 82px minmax(0, 1fr) 100px; gap: 8px; }
+  .mbar { grid-template-columns: 30px minmax(0, 1fr) 100px; }
+  .mrow { grid-template-columns: 1fr; }
+  .mrow .nm { text-align: left; color: var(--white); }
+  .cols, .two { grid-template-columns: 1fr; }
+  .bar { position: static; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+@media print {
+  :root, :root[data-mode] { color-scheme: light; --black: #fff; --panel: #fff; --panel-2: #f4f4f0; --white: #111; --muted: #555; --faint: #888; --line: #ddd; --line-strong: #bbb; --gray-bar: #d5d5cf; --pos-text: #377073; --neg-text: #c2443f; }
+  body::before, .no-print, .ctl, .export { display: none !important; }
+  .mod-head { position: static; } .mod, .card, .ins article { break-inside: avoid; }
+  * { animation: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<!-- logo Revenue: blocos na cor do texto (brancos no escuro, pretos no claro), conectores vermelho e teal -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="lgR" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#f0605b"/><stop offset=".4" stop-color="#e8544f"/><stop offset="1" stop-color="#160808"/></linearGradient>
+    <linearGradient id="lgT" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#5aa9ac"/><stop offset=".4" stop-color="#4f9ea1"/><stop offset="1" stop-color="#081415"/></linearGradient>
+    <symbol id="rv" viewBox="0 0 936 621">
+      <path fill="currentColor" d="M0 436 256 318V621H0zM340 276 596 158V621H340zM680 118 936 0V621H680z"/>
+      <path fill="url(#lgR)" d="M256 318 340 421V621L256 516z"/>
+      <path fill="url(#lgT)" d="M596 158 680 256V616L596 513z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- entrada -->
+<section class="start" id="start">
+  <div class="start-top">
+    <span class="brand"><svg viewBox="0 0 936 621"><use href="#rv"/></svg>Revenue</span>
+    <button class="btn" type="button" data-theme-toggle>Tema</button>
+  </div>
+  <div class="start-mid">
+    <svg viewBox="0 0 936 621" role="img" aria-label="Revenue"><use href="#rv"/></svg>
+    <h1>Solte o relatório.</h1>
+    <p>Vendas por canal e rota, comparadas entre períodos. O painel completo se monta sozinho a partir da planilha.</p>
+    <button class="dz" id="dz" type="button"><b>Arraste o arquivo para cá ou clique para escolher</b><span>.xlsx · .xls · .csv — um ou vários arquivos</span></button>
+    <div class="links">
+      <button class="link" id="demo" type="button">Ver com dados de exemplo</button>
+      <button class="link" id="tpl" type="button">Baixar modelo (.csv)</button>
+    </div>
+  </div>
+  <small>Os arquivos são lidos no seu navegador. Nada é enviado para servidor.</small>
+</section>
+
+<!-- painel -->
+<div id="app" hidden>
+  <header class="wrap top">
+    <span class="brand"><svg viewBox="0 0 936 621"><use href="#rv"/></svg>Revenue</span>
+    <div class="export">
+      <button class="btn" id="xls" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/></svg>Excel</button>
+      <button class="btn" id="pdf" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>PDF</button>
+      <button class="btn" id="ppt" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M12 17v4M8 21h8M7 13l3-3 3 2 4-4"/></svg>PowerPoint</button>
+      <button class="btn" type="button" data-theme-toggle><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>Tema</button>
+      <details class="menu" id="menu">
+        <summary class="btn pri">Arquivos</summary>
+        <div class="pop">
+          <p class="eyebrow">Carregados</p>
+          <div id="files"></div>
+          <hr>
+          <button class="it" data-act="add" type="button">Adicionar arquivo…</button>
+          <button class="it" data-act="map" type="button">Ajustar colunas…</button>
+          <button class="it" data-act="reset" type="button">Começar de novo</button>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <section class="wrap hero" id="topo">
+    <div>
+      <p class="eyebrow" id="ctx"></p>
+      <h1>Vendas por canal e rota<span id="per"></span></h1>
+    </div>
+    <p class="lead" id="lead"></p>
+  </section>
+
+  <nav class="wrap bar no-print" aria-label="Módulos do painel">
+    <span class="lbl">Módulos</span>
+    <div class="chips" id="modChips"></div>
+    <span class="sp"></span>
+    <label class="cmp" id="cmp"><select class="sel" id="selB" aria-label="Período analisado"></select><span id="vs">×</span><select class="sel" id="selA" aria-label="Período de comparação"></select></label>
+  </nav>
+
+  <section class="wrap" id="kpiSec">
+    <div class="kpi-head">
+      <p class="eyebrow">Resumo · <span id="kpiPer"></span></p>
+      <div class="chips ctl" id="subs"></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="decomp" id="decomp">
+      <div><p class="eyebrow">De onde veio a variação</p><h3 id="dcTitle"></h3><p>Separa a variação de receita em quanto veio de vender mais bilhetes e quanto veio do preço médio de cada bilhete.</p></div>
+      <div class="mod-body"><div class="div-chart" id="dcChart"></div><p class="src">Efeito volume = Δ bilhetes × ticket médio anterior. Efeito preço = Δ ticket médio × bilhetes atuais. A soma dos dois é a variação total.</p></div>
+    </div>
+  </section>
+
+  <main class="wrap" id="mods">
+    <!-- CANAIS -->
+    <section class="mod" data-mod="canais" id="m-canais">
+      <div class="mod-head"><p class="eyebrow">Canais</p><h2>Quem puxou e quem perdeu</h2><p>Variação por canal entre os dois períodos. Destaque nos que mais mexeram no resultado; o resto fica em cinza como contexto.</p></div>
+      <div class="mod-body">
+        <div class="ctl">
+          <span class="lbl">Métrica</span>
+          <div class="seg" data-s="canal.met" role="group" aria-label="Métrica"><button type="button" data-v="rec">Receita</button><button type="button" data-v="bil">Bilhetes</button><button type="button" data-v="tm">Ticket médio</button></div>
+          <div class="seg cmp-only" data-s="canal.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ absoluto</button><button type="button" data-v="pct">Δ %</button></div>
+          <div class="seg cmp-only" data-s="canal.dir" role="group" aria-label="Direção"><button type="button" data-v="all">Todos</button><button type="button" data-v="up">Cresceram</button><button type="button" data-v="down">Caíram</button></div>
+        </div>
+        <p class="title-insight" id="cTitle"></p>
+        <p class="sub" id="cSub"></p>
+        <div class="div-chart" id="cChart"></div>
+        <div class="two" id="cText"></div>
+        <div class="tbl-wrap"><table id="cTable"></table></div>
+        <p class="src">TM = receita ÷ bilhetes. Part. = participação na receita do período analisado. Clique no cabeçalho para ordenar.</p>
+      </div>
+    </section>
+
+    <!-- MIX -->
+    <section class="mod" data-mod="mix" id="m-mix">
+      <div class="mod-head"><p class="eyebrow">Mix de canais</p><h2>Quem ganhou espaço</h2><p>Participação de cada canal na receita. O círculo vazio é o período anterior, o cheio é o analisado.</p></div>
+      <div class="mod-body">
+        <p class="title-insight" id="mixTitle"></p>
+        <div class="legend"><span><i style="background:transparent;border:1.5px solid var(--muted);border-radius:50%"></i><span id="mixA"></span></span><span><i style="background:var(--teal);border-radius:50%"></i>Ganhou participação</span><span><i style="background:var(--red);border-radius:50%"></i>Perdeu participação</span></div>
+        <div class="dumb" id="mixChart"></div>
+        <p class="src" id="mixNote"></p>
+      </div>
+    </section>
+
+    <!-- MÊS A MÊS -->
+    <section class="mod" data-mod="mes" id="m-mes">
+      <div class="mod-head"><p class="eyebrow">Mês a mês</p><h2>O ritmo de cada mês</h2><p>Variação de receita em cada mês, comparando o mesmo mês nos dois períodos.</p></div>
+      <div class="mod-body">
+        <div class="ctl cmp-only"><span class="lbl">Escala</span><div class="seg" data-s="mes.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ valor</button><button type="button" data-v="pct">Δ %</button></div></div>
+        <p class="title-insight" id="mTitle"></p>
+        <div id="mChart"></div>
+        <p class="src">Δ % ausente quando a base anterior é zero. Meses com volume muito menor que os demais podem estar parciais.</p>
+      </div>
+    </section>
+
+    <!-- ROTAS -->
+    <section class="mod" data-mod="rotas" id="m-rotas">
+      <div class="mod-head"><p class="eyebrow">Rotas · todos os canais</p><h2>Onde a malha cresce e onde perde</h2><p>Cada rota por sentido. Em destaque, as maiores altas e as maiores quedas.</p></div>
+      <div class="mod-body">
+        <div class="ctl">
+          <div class="seg" data-s="rota.met" role="group" aria-label="Métrica"><button type="button" data-v="rec">Receita</button><button type="button" data-v="bil">Bilhetes</button><button type="button" data-v="tm">Ticket médio</button></div>
+          <div class="seg cmp-only" data-s="rota.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ absoluto</button><button type="button" data-v="pct">Δ %</button></div>
+          <div class="seg cmp-only" data-s="rota.dir" role="group" aria-label="Direção"><button type="button" data-v="all">Todas</button><button type="button" data-v="up">Cresceram</button><button type="button" data-v="down">Caíram</button></div>
+          <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="rQ" type="search" placeholder="Filtrar cidade…" autocomplete="off" aria-label="Filtrar rotas por cidade"></label>
+        </div>
+        <p class="title-insight" id="rTitle"></p>
+        <p class="sub" id="rSub"></p>
+        <div class="div-chart" id="rChart"></div>
+        <button class="link no-print" id="rMore" type="button" style="justify-self:start" hidden></button>
+        <div class="tbl-wrap"><table id="rTable"></table></div>
+        <p class="src">Rotas tratadas por sentido (origem › destino). Clique no cabeçalho para ordenar.</p>
+      </div>
+    </section>
+
+    <!-- ROTAS POR CANAL -->
+    <section class="mod" data-mod="rpc" id="m-rpc">
+      <div class="mod-head"><p class="eyebrow">Rotas por canal</p><h2>Onde cada canal ganhou e perdeu</h2><p>Principais altas e quedas de receita dentro de cada canal. A barra compara as rotas do mesmo canal.</p></div>
+      <div class="mod-body">
+        <div class="ctl">
+          <span class="lbl">Canal</span><div class="chips" id="rpcChips"></div>
+          <span class="lbl">Top</span><select class="sel" id="rpcN" aria-label="Quantidade de rotas por lado"><option>3</option><option>4</option><option>5</option><option>8</option></select>
+        </div>
+        <div class="cards" id="rpcCards"></div>
+        <p class="title-insight" id="heatTitle" style="margin-top:18px"></p>
+        <p class="sub">Mapa rota × canal com as rotas de maior impacto. Célula vazia = sem venda nos dois períodos.</p>
+        <div class="tbl-wrap" style="border:0"><table class="heat" id="heat"></table></div>
+      </div>
+    </section>
+
+    <!-- CONCLUSÕES -->
+    <section class="mod" data-mod="concl" id="m-concl">
+      <div class="mod-head"><p class="eyebrow">Para a reunião</p><h2>Pontos de atenção</h2><p>Leituras geradas automaticamente a partir dos números. Indicam onde olhar; a causa precisa de investigação.</p></div>
+      <div class="mod-body"><div class="ins" id="ins"></div><ul class="notes" id="notes"></ul></div>
+    </section>
+  </main>
+
+  <footer class="wrap"><span>Revenue · Estratégia de Receita</span><span id="foot"></span><a href="#topo" class="no-print">Voltar ao topo ↑</a></footer>
+</div>
+
+<dialog id="mapDlg">
+  <h2>Quais colunas usar?</h2>
+  <p id="mapMsg">Indique onde está cada informação. É preciso ao menos Canal ou Rota e uma medida (Receita ou Bilhetes).</p>
+  <div class="map" id="mapGrid"></div>
+  <div class="dlg-foot"><button class="btn" id="mapCancel" type="button">Cancelar</button><button class="btn pri" id="mapOk" type="button">Aplicar</button></div>
+</dialog>
+<input type="file" id="pick" accept=".xlsx,.xls,.xlsm,.csv,.txt,.tsv" multiple hidden>
+<div class="veil" id="veil"><div>Solte para carregar</div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script>
+/* ==================================================================
+   Utilidades e formatação
+   ================================================================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9$]+/g, " ").trim();
+const nf0 = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const nf2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const sg = v => (v > 0 ? "+" : v < 0 ? "−" : "");
+const cls = v => (v > 0 ? "up" : v < 0 ? "down" : "");
+const fInt = v => (v == null ? "–" : nf0.format(v));
+const fMoney = v => { const a = Math.abs(v); return "R$ " + (a >= 1e6 ? nf2.format(a / 1e6) + " mi" : a >= 1e4 ? nf1.format(a / 1e3) + " mil" : nf0.format(a)); };
+const fPct = v => (v == null || !isFinite(v) ? "–" : sg(v) + nf1.format(Math.abs(v)) + "%");
+const fPP = v => sg(v) + nf1.format(Math.abs(v)) + " pp";
+const fTM = v => (v == null || !isFinite(v) ? "–" : "R$ " + nf1.format(v));
+const fV = (v, k) => (v == null ? "–" : k === "bil" ? nf0.format(v) : k === "tm" ? "R$ " + nf2.format(v) : fMoney(v));
+const fD = (v, k) => (v == null ? "–" : sg(v) + fV(Math.abs(v), k) + (k === "bil" ? " bilh." : ""));
+const pct = (a, b) => (a > 0 ? (b - a) / a * 100 : null);
+const maxBy = (a, k) => a.reduce((x, y) => (x == null || y[k] > x[k] ? y : x), null);
+const minBy = (a, k) => a.reduce((x, y) => (x == null || y[k] < x[k] ? y : x), null);
+let tT; const toast = (m, ms = 3200) => { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tT); tT = setTimeout(() => t.classList.remove("on"), ms); };
+
+const MONL = ["", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const MONF = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const MONIDX = { jan: 1, fev: 2, feb: 2, mar: 3, abr: 4, apr: 4, mai: 5, may: 5, jun: 6, jul: 7, ago: 8, aug: 8, set: 9, sep: 9, out: 10, oct: 10, nov: 11, dez: 12, dec: 12 };
+const MONRX = /\b(jan(?:eiro|uary)?|fev(?:ereiro)?|feb(?:ruary)?|mar(?:co|ch)?|abr(?:il)?|apr(?:il)?|maio?|may|jun(?:ho|e)?|jul(?:ho|y)?|ago(?:sto)?|aug(?:ust)?|set(?:embro)?|sep(?:tember)?|out(?:ubro)?|oct(?:ober)?|nov(?:embro|ember)?|dez(?:embro)?|dec(?:ember)?)\b(?: (?:de )?(\d{4}|\d{2})\b)?/;
+
+/* ==================================================================
+   Leitura do arquivo: número, período e colunas
+   ================================================================== */
+function num(v) {
+  if (v == null || v === "") return null;
+  if (typeof v === "number") return isFinite(v) ? v : null;
+  if (v instanceof Date) return null;
+  let s = String(v).replace(/[R$\s ]/g, "").replace(/−/g, "-");
+  const neg = /^\(.*\)$/.test(s) || s.startsWith("-"); s = s.replace(/[()\-+]/g, "");
+  if (!/^[\d.,]+$/.test(s)) return null;
+  const d = s.lastIndexOf("."), c = s.lastIndexOf(",");
+  if (d >= 0 && c >= 0) s = c > d ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+  else if (c >= 0) s = /^\d{1,3}(,\d{3})+$/.test(s) && s.length > 5 ? s.replace(/,/g, "") : s.replace(",", ".");
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+  const n = parseFloat(s);
+  return isFinite(n) ? (neg ? -n : n) : null;
+}
+// devolve { y, m, p } — ano, mês e o rótulo original
+function parsePeriod(v, hint) {
+  if (v == null || v === "") return null;
+  if (v instanceof Date) return isNaN(v) ? null : { y: v.getFullYear(), m: v.getMonth() + 1, p: v.toLocaleDateString("pt-BR") };
+  if (typeof v === "number") {
+    if (v > 1900 && v < 2200 && Number.isInteger(v)) return { y: v, m: null, p: String(v) };
+    if (hint === "mes" && v >= 1 && v <= 12) return { y: null, m: v, p: MONL[v] };
+    if (hint !== "hdr" && v > 20000 && v < 80000) { const d = new Date(Math.round((v - 25569) * 864e5)); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, p: d.toLocaleDateString("pt-BR") }; }
+    return { y: null, m: null, p: String(v) };
+  }
+  const raw = String(v).trim(), s = norm(raw); let x;
+  const yy = n => (+n < 100 ? 2000 + +n : +n);
+  if ((x = raw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/))) return { y: yy(x[3]), m: +x[2], p: raw };
+  if ((x = raw.match(/^(\d{4})[\/\-.](\d{1,2})(?:[\/\-.]\d{1,2})?/))) return { y: +x[1], m: +x[2], p: raw };
+  if ((x = raw.match(/^(\d{1,2})[\/\-.](\d{4})$/))) return { y: +x[2], m: +x[1], p: raw };
+  if ((x = s.match(MONRX))) { const y = x[2] ? yy(x[2]) : (s.match(/\b(19|20)\d\d\b/) || [null])[0]; return { y: y ? +y : null, m: MONIDX[x[1].slice(0, 3)], p: raw }; }
+  if ((x = s.match(/\b((?:19|20)\d\d)\b/))) return { y: +x[1], m: null, p: raw };
+  if (hint === "mes" && /^\d{1,2}$/.test(s) && +s >= 1 && +s <= 12) return { y: null, m: +s, p: MONL[+s] };
+  return { y: null, m: null, p: raw };
+}
+const hasPer = c => { const q = parsePeriod(c, "hdr"); return !!(q && (q.y || q.m)); };
+
+const RX = {
+  data: /\b(data|date|dia|emissao)\b/, ano: /\b(ano|year)\b/, mes: /\b(mes|month|periodo|competencia)\b/,
+  canal: /\b(canal|canais|channel|pdv)\b/, origem: /\b(origem|origin)\b/, destino: /\b(destino|destination)\b/,
+  rota: /\b(rota|rotas|trecho|trechos|linha|route|secao)\b/,
+  bil: /\b(bilhetes?|passagens?|passageiros?|pax|qtd|qtde|quantidade|tickets?|assentos?)\b/,
+  rec: /\b(receita|valor|faturamento|revenue|vendas?|tarifa|montante)\b|r\$/,
+};
+const ROLES = [["canal", "Canal"], ["rota", "Rota"], ["origem", "Origem"], ["destino", "Destino"], ["data", "Data"], ["ano", "Ano"], ["mes", "Mês / período"], ["rec", "Receita"], ["bil", "Bilhetes"]];
+const ANYRX = new RegExp(Object.values(RX).map(r => r.source).join("|"));
+const STRONG = /\b(receita|valor|faturamento|revenue|bilhetes?|passagens?|passageiros?|pax|qtd|qtde|quantidade)\b/;
+const DERIV = /\b(medi[oa]|tm|var|variacao|delta|part|participacao|share|dif|diferenca|crescimento)\b/;
+const MEASW = /\b(receita|valor|faturamento|revenue|vendas?|tarifa|montante|bilhetes?|passagens?|passageiros?|pax|qtd|qtde|quantidade|tickets?|assentos?|total|de|em|r\$)\b/g;
+const TOTRX = /\btotal\b|^soma\b|^todos\b/;
+
+// acha a linha de cabeçalho e o papel de cada coluna
+function detect(aoa) {
+  let best = -1, bs = 1;
+  for (let i = 0; i < Math.min(aoa.length, 40); i++) {
+    let s = 0; for (const c of aoa[i] || []) if (typeof c === "string" && ANYRX.test(norm(c))) s++;
+    if (s > bs) { bs = s; best = i; }
+  }
+  if (best < 0) best = aoa.findIndex(r => r && r.filter(c => c != null && c !== "").length >= 2);
+  if (best < 0) return null;
+  let headers = Array.from(aoa[best] || [], c => (c == null ? "" : String(c).trim()));
+  const up = aoa[best - 1]; // cabeçalho em duas linhas: período em cima, medida embaixo
+  if (up && up.some(hasPer) && !headers.some(hasPer)) {
+    let last = "";
+    headers = headers.map((h, i) => { if (up[i] != null && String(up[i]).trim()) last = up[i] instanceof Date ? up[i].toLocaleDateString("pt-BR") : String(up[i]).trim(); const n = norm(h); return hasPer(last) && (RX.bil.test(n) || RX.rec.test(n)) ? h + " " + last : h; });
+  }
+  const map = {}, wide = [];
+  headers.forEach((h, i) => {
+    const n = norm(h); if (!n || DERIV.test(n) || /[%Δ]/.test(h)) return;
+    if (!STRONG.test(n)) for (const k of ["data", "ano", "mes", "canal", "origem", "destino", "rota"]) if (RX[k].test(n)) { if (map[k] == null) map[k] = i; return; }
+    const role = RX.bil.test(n) ? "bil" : RX.rec.test(n) ? "rec" : null; if (!role) return;
+    const q = parsePeriod(n.replace(MEASW, " ").trim(), "hdr");
+    if (q && (q.y || q.m)) wide.push({ idx: i, role, y: q.y, m: q.m, p: [q.m ? MONL[q.m] : "", q.y || ""].join(" ").trim() });
+    else if (map[role] == null) map[role] = i;
+  });
+  const isWide = ["rec", "bil"].some(k => wide.filter(w => w.role === k).length >= 2);
+  if (!isWide) for (const w of wide) if (map[w.role] == null) map[w.role] = w.idx;
+  return { headers, rows: aoa.slice(best + 1), map, wide: isWide ? wide : [] };
+}
+const valid = s => (s.map.canal != null || s.map.rota != null || (s.map.origem != null && s.map.destino != null)) && (s.wide.length || s.map.rec != null || s.map.bil != null);
+
+function buildRecs(src) {
+  const { rows, map: M, wide, name } = src, out = []; let lastCanal = null, row;
+  const txt = i => { const v = i == null ? null : row[i]; return v == null ? null : (v instanceof Date ? v.toLocaleDateString("pt-BR") : String(v).trim()) || null; };
+  for (row of rows) {
+    if (!row) continue;
+    let canal = txt(M.canal), rota = txt(M.rota);
+    const o = txt(M.origem), d = txt(M.destino);
+    if (!rota && o && d) rota = o + " › " + d;
+    if (canal) lastCanal = canal; else if (M.canal != null && rota) canal = lastCanal; // células mescladas
+    if (!canal && !rota) continue;
+    if (TOTRX.test(norm(canal)) || TOTRX.test(norm(rota))) continue;
+    if (wide.length) {
+      for (const w of wide) { const v = num(row[w.idx]); if (v != null) out.push({ canal, rota, y: w.y, m: w.m, p: w.p, rec: w.role === "rec" ? v : 0, bil: w.role === "bil" ? v : 0 }); }
+      continue;
+    }
+    const rec = num(row[M.rec]), bil = num(row[M.bil]);
+    if (rec == null && bil == null) continue;
+    let y = null, m = null, p = null;
+    for (const k of ["data", "ano", "mes"]) if (M[k] != null) { const q = parsePeriod(row[M[k]], k); if (q) { y = y ?? q.y; m = m ?? q.m; p = q.p; } }
+    out.push({ canal, rota, y, m, p: p ?? name, rec: rec || 0, bil: bil || 0 });
+  }
+  return out;
+}
+
+function parseCSV(text) {
+  const head = text.split(/\r?\n/, 6).join("\n");
+  const sep = [";", "\t", ","].map(s => [s, head.split(s).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const rows = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === sep) { row.push(cur); cur = ""; }
+    else if (ch === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+    else if (ch !== "\r") cur += ch;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.map(r => r.map(c => (c.trim() === "" ? null : c.trim())));
+}
+async function readFile(file) {
+  const buf = await file.arrayBuffer(), base = file.name.replace(/\.[^.]+$/, "");
+  if (/\.(csv|txt|tsv)$/i.test(file.name)) {
+    let text; try { text = new TextDecoder("utf-8", { fatal: true }).decode(buf); } catch (e) { text = new TextDecoder("windows-1252").decode(buf); }
+    return [{ name: base, aoa: parseCSV(text.replace(/^﻿/, "")) }];
+  }
+  if (!window.XLSX) throw new Error("Leitor de Excel indisponível (sem internet?). Tente um .csv.");
+  const wb = XLSX.read(buf, { type: "array", cellDates: true });
+  return wb.SheetNames.map(n => ({ name: base, sheet: n, aoa: XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null }) }));
+}
+
+/* ==================================================================
+   Estado
+   ================================================================== */
+const D = { sources: [], recs: [], groups: [], subs: [], has: {} };
+const dimState = () => ({ met: "rec", esc: "abs", dir: "all", q: "", sort: null, all: false });
+const S = { A: null, B: null, sub: null, hide: [], canal: dimState(), rota: dimState(), mes: { esc: "abs" }, rpc: { sel: null, n: 4 } };
+let C = {}; // agregados do recorte atual
+const MET = { rec: "Receita", bil: "Bilhetes", tm: "Ticket médio" };
+const MODS = [["canais", "Canais"], ["mix", "Mix"], ["mes", "Mês a mês"], ["rotas", "Rotas"], ["rpc", "Rotas por canal"], ["concl", "Conclusões"]];
+const SEP = "\u0001";
+
+async function ingest(files) {
+  let bad = null;
+  for (const f of files) {
+    try {
+      const sheets = await readFile(f), found = [];
+      for (const sh of sheets) { const d = detect(sh.aoa); if (d) found.push({ ...d, file: f.name, name: sh.name, sheet: sh.sheet }); }
+      const ok = found.filter(valid);
+      if (ok.length > 1) ok.forEach(s => (s.name = s.sheet));
+      D.sources = D.sources.filter(s => s.file !== f.name);
+      if (ok.length) D.sources.push(...ok);
+      else if (found.length) { D.sources.push(found[0]); bad = found[0]; }
+      else toast(`“${f.name}” parece vazio.`);
+    } catch (e) { toast(e.message || `Não consegui ler “${f.name}”.`, 5000); }
+  }
+  rebuild();
+  if (bad) openMap("Não reconheci as colunas de “" + bad.file + "” sozinho. Indique onde está cada informação.");
+}
+
+function rebuild() {
+  D.recs = D.sources.filter(valid).flatMap(buildRecs);
+  const show = D.recs.length > 0;
+  $("#start").hidden = show; $("#app").hidden = !show;
+  if (!show) { if (D.sources.length && D.sources.every(valid)) toast("Nenhuma linha com valores encontrada."); return; }
+  D.has = { canal: D.recs.some(r => r.canal), rota: D.recs.some(r => r.rota), rec: D.recs.some(r => r.rec), bil: D.recs.some(r => r.bil) };
+  // como comparar: anos (com meses como recorte) › meses › rótulo/arquivo
+  const ys = new Set(D.recs.map(r => r.y).filter(Boolean)), ms = new Set(D.recs.filter(r => r.m).map(r => (r.y || 0) * 12 + r.m));
+  const ord = new Map();
+  for (const r of D.recs) {
+    if (ys.size >= 2) { r.g = r.y ? String(r.y) : null; r.s = r.m; r.o = r.y; }
+    else if (ms.size >= 2) { r.g = r.m ? MONL[r.m] + (r.y ? " " + r.y : "") : null; r.s = null; r.o = (r.y || 0) * 12 + r.m; }
+    else { r.g = r.p; r.s = null; r.o = ord.size; }
+    if (r.g != null && !ord.has(r.g)) ord.set(r.g, r.o);
+  }
+  D.groups = [...ord.keys()].sort((a, b) => ord.get(a) - ord.get(b) || String(a).localeCompare(b, "pt-BR", { numeric: true }));
+  D.subs = [...new Set(D.recs.map(r => r.s).filter(Boolean))].sort((a, b) => a - b);
+  S.B = D.groups.at(-1); S.A = D.groups.length > 1 ? D.groups.at(-2) : null; S.sub = null;
+  const m0 = D.has.rec ? "rec" : "bil";
+  Object.assign(S.canal, dimState(), { met: m0 }); Object.assign(S.rota, dimState(), { met: m0 }); S.rpc.sel = null;
+  $("#rQ").value = "";
+  render(); scrollTo({ top: 0 });
+}
+
+/* ==================================================================
+   Cálculo
+   ================================================================== */
+const Z = () => ({ a: { rec: 0, bil: 0 }, b: { rec: 0, bil: 0 } });
+function agg(keyFn, sub = S.sub) {
+  const m = new Map(), t = Z();
+  for (const r of D.recs) {
+    if (sub != null && r.s !== sub) continue;
+    const side = r.g === S.B ? "b" : S.A != null && r.g === S.A ? "a" : null; if (!side) continue;
+    t[side].rec += r.rec; t[side].bil += r.bil;
+    const k = keyFn && keyFn(r); if (k == null || k === false) continue;
+    let o = m.get(k); if (!o) m.set(k, (o = Z()));
+    o[side].rec += r.rec; o[side].bil += r.bil;
+  }
+  return { m, t };
+}
+const mv = (o, k) => (k === "tm" ? (o.bil > 0 ? o.rec / o.bil : null) : o[k]);
+// linha de uma métrica: anterior, atual, variação absoluta e percentual
+function L(o, k) { const a = C.single ? null : mv(o.a, k), b = mv(o.b, k), d = a == null || b == null ? null : b - a; return { a, b, d, p: d == null ? null : pct(a, b) }; }
+const lines = (map, k) => [...map].map(([n, o]) => ({ n, o, ...L(o, k) }));
+
+function compute() {
+  C = { single: S.A == null };
+  C.met0 = D.has.rec ? "rec" : "bil";
+  C.T = agg(null).t;
+  C.canal = agg(r => r.canal).m; C.rota = agg(r => r.rota).m;
+  C.cr = agg(r => r.canal && r.rota && r.canal + SEP + r.rota).m;
+  C.mdim = D.has.canal ? "canal" : "rota";
+  C.months = D.subs.map(m => { const x = agg(r => r[C.mdim], m); return { m, map: x.m, t: x.t }; });
+  // efeito volume e efeito preço
+  const a = C.T.a, b = C.T.b;
+  C.dec = !C.single && a.bil > 0 && b.bil > 0 && D.has.rec ? { vol: (b.bil - a.bil) * (a.rec / a.bil), pre: (b.rec / b.bil - a.rec / a.bil) * b.bil, tot: b.rec - a.rec } : null;
+}
+const avail = k => ({ canais: D.has.canal, mix: D.has.canal && !C.single, mes: D.subs.length >= 2, rotas: D.has.rota, rpc: D.has.canal && D.has.rota, concl: !C.single }[k]);
+const perLabel = () => (S.sub ? MONF[S.sub] + " · " : "") + (C.single ? S.B : `${S.B} × ${S.A}`);
+
+/* ==================================================================
+   Componentes
+   ================================================================== */
+// barras divergentes: rows = [{ n, v, label, hi, tone }]
+function divChart(el, rows) {
+  if (!rows.length) { el.innerHTML = '<p class="src">Nada para mostrar com esse filtro.</p>'; return; }
+  const lo = Math.min(0, ...rows.map(r => r.v)), hi = Math.max(0, ...rows.map(r => r.v)), span = hi - lo || 1, z = -lo / span * 100;
+  el.innerHTML = rows.map((r, i) => {
+    const w = Math.abs(r.v) / span * 100, left = r.v >= 0 ? z : z - w, tone = r.tone || (r.v >= 0 ? "pos" : "neg");
+    return `<div class="drow${r.hi ? " hi" : ""}" style="--i:${Math.min(i, 30)}" title="${esc(r.tip || r.n)}"><span class="nm">${esc(r.n)}</span>
+      <span class="track"><span class="zero" style="left:${z}%"></span><span class="b ${tone}" style="left:${left}%;width:${Math.max(w, .4)}%"></span></span>
+      <span class="val ${r.hi && tone !== "neu" ? cls(r.v) : ""}">${r.label}</span></div>`;
+  }).join("");
+}
+function table(el, cols, rows, st, foot) {
+  const data = rows.slice();
+  if (st.sort) { const c = cols.find(c => c.k === st.sort.k); if (c) data.sort((x, y) => { const u = c.sv(x), v = c.sv(y); return (typeof u === "string" ? u.localeCompare(v, "pt-BR") : (u ?? -Infinity) - (v ?? -Infinity)) * st.sort.dir; }); }
+  el.innerHTML = `<thead><tr>${cols.map(c => `<th scope="col" data-k="${c.k}"${st.sort && st.sort.k === c.k ? ` aria-sort="${st.sort.dir > 0 ? "ascending" : "descending"}"` : ""}>${esc(c.h)}</th>`).join("")}</tr></thead>
+    <tbody>${data.map(r => `<tr>${cols.map(c => `<td class="${c.c ? c.c(r) : ""}">${c.f(r)}</td>`).join("")}</tr>`).join("")}</tbody>
+    ${foot ? `<tfoot><tr>${cols.map(c => `<td class="${c.c ? c.c(foot) : ""}">${c.f(foot)}</td>`).join("")}</tr></tfoot>` : ""}`;
+  el.onclick = e => { const th = e.target.closest("th"); if (!th) return; const k = th.dataset.k; st.sort = { k, dir: st.sort && st.sort.k === k ? -st.sort.dir : k === "n" ? 1 : -1 }; render(); };
+}
+// colunas completas (receita, bilhetes, ticket médio, participação) para canais e rotas
+function fullCols(first) {
+  const s = C.single, R = D.has.rec, B = D.has.bil, a = S.A, b = S.B, tb = C.T.b.rec;
+  const r = o => L(o, "rec"), q = o => L(o, "bil"), t = o => L(o, "tm");
+  return [
+    { k: "n", h: first, f: x => esc(x.n), sv: x => x.n },
+    R && !s && { k: "ra", h: "Receita " + a, f: x => fInt(r(x.o).a), sv: x => r(x.o).a },
+    R && { k: "rb", h: "Receita " + b, f: x => fInt(r(x.o).b), sv: x => r(x.o).b },
+    R && !s && { k: "rd", h: "Δ R$", f: x => sg(r(x.o).d) + fInt(Math.abs(r(x.o).d)), sv: x => r(x.o).d, c: x => cls(r(x.o).d) },
+    R && !s && { k: "rp", h: "Δ %", f: x => fPct(r(x.o).p), sv: x => r(x.o).p, c: x => cls(r(x.o).d) },
+    B && !s && { k: "ba", h: "Bilh. " + a, f: x => fInt(q(x.o).a), sv: x => q(x.o).a },
+    B && { k: "bb", h: "Bilh. " + b, f: x => fInt(q(x.o).b), sv: x => q(x.o).b },
+    B && !s && { k: "bp", h: "Δ %", f: x => fPct(q(x.o).p), sv: x => q(x.o).p, c: x => cls(q(x.o).d) },
+    R && B && !s && { k: "ta", h: "TM " + a, f: x => fTM(t(x.o).a), sv: x => t(x.o).a },
+    R && B && { k: "tb", h: "TM " + b, f: x => fTM(t(x.o).b), sv: x => t(x.o).b },
+    R && B && !s && { k: "tp", h: "Δ %", f: x => fPct(t(x.o).p), sv: x => t(x.o).p, c: x => cls(t(x.o).d) },
+    R && { k: "sh", h: "Part.", f: x => (tb ? nf1.format(x.o.b.rec / tb * 100) + "%" : "–"), sv: x => x.o.b.rec },
+  ].filter(Boolean);
+}
+// frase-título de um conjunto de linhas
+function insight(dim, met) {
+  const many = dim === "canal" ? "canais" : "rotas", rows = lines(C[dim], met);
+  if (C.single) { const top = maxBy(rows.filter(r => r.b != null), "b"); return top ? `${top.n} lidera em ${MET[met].toLowerCase()}: ${fV(top.b, met)}` : ""; }
+  const v = rows.filter(r => r.d != null); if (!v.length) return "";
+  const top = maxBy(v, "d"), bot = minBy(v, "d"), T = L(C.T, met);
+  if (met === "tm") {
+    const dn = v.filter(r => r.d < 0).length, fall = dn >= v.length / 2, w = fall ? minBy(v.filter(r => r.p != null), "p") : maxBy(v.filter(r => r.p != null), "p");
+    return `O ticket médio ${fall ? "caiu" : "subiu"} em ${fall ? dn : v.length - dn} de ${v.length} ${many}${w ? `; em ${w.n}, ${fPct(w.p)}` : ""}`;
+  }
+  if (T.d > 0 && top.d > 0 && top.d / T.d >= .5) return `${top.n} explica ${top.d >= T.d ? "todo o" : nf0.format(top.d / T.d * 100) + "% do"} crescimento: ${fD(top.d, met)} de ${fD(T.d, met)} líquidos`;
+  if (T.d < 0 && bot.d < 0 && bot.d / T.d >= .5) return `${bot.n} concentra a queda: ${fD(bot.d, met)} de ${fD(T.d, met)} líquidos`;
+  return [top.d > 0 && `${top.n} lidera (${fD(top.d, met)})`, bot.d < 0 && `${bot.n} é a maior queda (${fD(bot.d, met)})`].filter(Boolean).join("; ");
+}
+
+/* ==================================================================
+   Módulos
+   ================================================================== */
+function renderTop() {
+  const T = C.T, s = C.single, R = L(T, "rec"), B = L(T, "bil"), M = L(T, "tm");
+  const opt = sel => D.groups.map(g => `<option${g === sel ? " selected" : ""}>${esc(g)}</option>`).join("");
+  $("#selB").innerHTML = opt(S.B); $("#selA").innerHTML = opt(S.A);
+  $("#selA").hidden = $("#vs").hidden = s; $("#cmp").hidden = D.groups.length < 2;
+  $("#ctx").textContent = "Revenue Management · " + D.sources.map(x => x.file.replace(/\.[^.]+$/, "")).join(" + ");
+  $("#per").textContent = perLabel(); $("#kpiPer").textContent = perLabel();
+  $("#subs").innerHTML = D.subs.length > 1 ? `<button class="chip sm" type="button" data-m="" aria-pressed="${S.sub == null}">Todos os meses</button>` + D.subs.map(m => `<button class="chip sm" type="button" data-m="${m}" aria-pressed="${S.sub === m}">${MONF[m]}</button>`).join("") : "";
+
+  // parágrafo de abertura
+  const main = D.has.rec ? R : B, mk = C.met0, ch = D.has.canal ? lines(C.canal, mk).filter(r => r.d != null) : [];
+  let lead;
+  if (s) lead = `Total de <b>${fV(main.b, mk)}</b>${D.has.rec && D.has.bil ? ` em <b>${fInt(B.b)}</b> bilhetes, ticket médio de <b>${fV(M.b, "tm")}</b>` : ""} em ${esc(S.B)}. Carregue outro período para comparar.`;
+  else {
+    lead = D.has.rec ? `Receita ${R.d >= 0 ? "cresceu" : "caiu"} <b>${fPct(R.p).replace(/^[+−]/, "")}</b>${D.has.bil ? ` com <b>${fPct(B.p)}</b> de bilhetes` : ""}.` : `Bilhetes ${B.d >= 0 ? "cresceram" : "caíram"} <b>${fPct(B.p).replace(/^[+−]/, "")}</b>.`;
+    if (C.dec) { const { vol, pre } = C.dec, byVol = Math.abs(vol) >= Math.abs(pre); lead += vol * pre < 0 ? ` O ${R.d >= 0 ? "ganho" : "recuo"} veio de ${(R.d >= 0) === (vol > 0) ? "volume" : "preço"}: o ticket médio ${M.d < 0 ? "caiu" : "subiu"} <b>${fPct(M.p).slice(1)}</b>.` : ` Volume e ticket médio ${vol > 0 ? "subiram" : "caíram"} juntos (TM <b>${fPct(M.p)}</b>); o efeito maior foi de ${byVol ? "volume" : "preço"}.`; }
+    const top = maxBy(ch, "d"), dn = ch.filter(r => r.d < 0).sort((x, y) => x.d - y.d).slice(0, 2);
+    if (top && top.d > 0) lead += ` <b>${esc(top.n)}</b> é o canal que mais cresce`;
+    if (dn.length) lead += `${top && top.d > 0 ? ";" : ""} ${dn.map(r => `<b>${esc(r.n)}</b>`).join(" e ")} ${dn.length > 1 ? "perderam" : "perdeu"} ${MET[mk].toLowerCase()}`;
+    if ((top && top.d > 0) || dn.length) lead += ".";
+  }
+  $("#lead").innerHTML = lead;
+
+  // KPIs
+  const tile = (k, v, d) => `<div class="kpi"><p class="eyebrow">${k}</p><div class="v">${v}</div><div class="d">${d}</div></div>`;
+  const big = (v, k) => (k === "bil" ? fInt(v) : `<small>R$</small>${fV(v, k).replace("R$ ", "")}`);
+  const sub = (x, k) => (s ? esc(S.B) : x.p == null ? "sem base de comparação" : `<span class="pill ${cls(x.d)}">${fPct(x.p)}</span> ${fD(x.d, k)} · era ${fV(x.a, k)}`);
+  const tiles = [];
+  if (D.has.rec) tiles.push(tile("Receita", big(R.b, "rec"), sub(R, "rec")));
+  if (D.has.bil) tiles.push(tile("Bilhetes", big(B.b, "bil"), sub(B, "bil")));
+  if (D.has.rec && D.has.bil) tiles.push(tile("Ticket médio", big(M.b, "tm"), sub(M, "tm")));
+  const dim = D.has.canal ? "canal" : "rota", all = lines(C[dim], mk);
+  if (s) { const top = maxBy(all, "b"); if (top && main.b) tiles.push(tile(`Maior ${dim}`, `${nf0.format(top.b / main.b * 100)}%`, `${esc(top.n)} · ${fV(top.b, mk)}`)); }
+  else { const top = main.d >= 0 ? maxBy(all.filter(r => r.d != null), "d") : minBy(all.filter(r => r.d != null), "d");
+    if (top && main.d) tiles.push(tile(`${esc(top.n)} ${main.d >= 0 ? "no crescimento" : "na queda"}`, `${nf0.format(top.d / main.d * 100)}%`, `<span class="pill ${cls(top.d)}">${fD(top.d, mk)}</span> de ${fD(main.d, mk)} líquidos`)); }
+  $("#kpis").innerHTML = tiles.join("");
+
+  // decomposição volume × preço
+  $("#decomp").hidden = !C.dec;
+  if (C.dec) {
+    const { vol, pre, tot } = C.dec, sh = v => (tot ? `<em>${nf0.format(v / tot * 100)}% da variação</em>` : "");
+    $("#dcTitle").textContent = vol * pre < 0 ? `${Math.abs(vol) > Math.abs(pre) ? "Volume" : "Preço"} ${tot >= 0 ? "sustenta o ganho" : "puxa a queda"}; ${Math.abs(vol) > Math.abs(pre) ? "o ticket médio" : "o volume"} joga contra` : `Volume e preço ${tot >= 0 ? "somam" : "caem"} na mesma direção`;
+    divChart($("#dcChart"), [
+      { n: "Efeito volume (bilhetes)", v: vol, hi: true, label: fD(vol, "rec") + sh(vol) },
+      { n: "Efeito preço (ticket médio)", v: pre, hi: true, label: fD(pre, "rec") + sh(pre) },
+      { n: "Variação total de receita", v: tot, hi: true, tone: "neu", label: fD(tot, "rec") + `<em>${fPct(R.p)}</em>` },
+    ]);
+  }
+}
+
+function renderDim(dim) {
+  const P = dim === "canal" ? "c" : "r", st = S[dim], s = C.single, key = s ? "b" : st.esc === "abs" ? "d" : "p";
+  if (!D.has[st.met === "tm" ? "rec" : st.met] || (st.met === "tm" && !D.has.bil)) st.met = C.met0;
+  const qn = norm(st.q);
+  const pass = r => (s || st.dir === "all" || (st.dir === "up" ? r.d > 0 : r.d < 0)) && (!qn || norm(r.n).includes(qn));
+  let rows = lines(C[dim], st.met).filter(r => r[key] != null && (r.a || r.b) && pass(r)).sort((x, y) => y[key] - x[key]);
+  const absMax = Math.max(0, ...rows.map(r => Math.abs(r[key])));
+  const hi = dim === "canal" ? new Set(rows.filter(r => Math.abs(r[key]) >= absMax * .12).map(r => r.n))
+    : new Set((s ? rows.slice(0, 5) : [...rows.filter(r => r[key] > 0).slice(0, 5), ...rows.filter(r => r[key] < 0).slice(-4)]).map(r => r.n));
+  const LIM = 24, total = rows.length;
+  if (dim === "rota") {
+    if (!st.all && total > LIM) { const keep = new Set(rows.slice().sort((x, y) => Math.abs(y[key]) - Math.abs(x[key])).slice(0, LIM)); rows = rows.filter(r => keep.has(r)); }
+    const more = $("#rMore"); more.hidden = total <= LIM; more.textContent = st.all ? "Mostrar só as principais" : `Mostrar todas as ${total} rotas`;
+  }
+  const tb = mv(C.T.b, st.met);
+  divChart($(`#${P}Chart`), rows.map(r => ({
+    n: r.n, v: r[key], hi: hi.has(r.n), tone: s ? "neu" : null, tip: s ? r.n : `${r.n}: ${fV(r.a, st.met)} → ${fV(r.b, st.met)}`,
+    label: s ? `${fV(r.b, st.met)}${st.met !== "tm" && tb ? `<em>${nf1.format(r.b / tb * 100)}%</em>` : ""}` : st.esc === "abs" ? `${fD(r.d, st.met)}<em>${fPct(r.p)}</em>` : `${fPct(r.p)}<em>${fD(r.d, st.met)}</em>`,
+  })));
+  $(`#${P}Title`).textContent = insight(dim, st.met);
+  $(`#${P}Sub`).textContent = `${s ? MET[st.met] : "Variação de " + MET[st.met].toLowerCase()} por ${dim}, ${perLabel()}` + (qn ? ` · filtro “${st.q}”` : "");
+
+  // quem cresceu e quem caiu, em texto (só canais)
+  if (dim === "canal") {
+    const box = $("#cText"); box.hidden = s || !D.has.rec;
+    if (!box.hidden) {
+      const all = lines(C.canal, "rec").filter(r => r.d != null), tA = C.T.a.rec, tB = C.T.b.rec;
+      const li = r => { const b = L(r.o, "bil"), t = L(r.o, "tm"); const bits = [`${fD(r.d, "rec")}${r.p == null ? " (sem base anterior)" : ` (${fPct(r.p)})`}`];
+        if (D.has.bil) bits.push(Math.abs(b.p ?? 100) < 1.5 ? `bilhetes estáveis (${fInt(b.a)} → ${fInt(b.b)})` : `bilhetes ${fInt(b.a)} → ${fInt(b.b)} (${fPct(b.p)})`);
+        if (t.p != null) bits.push(`TM ${fPct(t.p)}`);
+        if (tA && tB) bits.push(`participação de ${nf1.format(r.o.a.rec / tA * 100)}% para ${nf1.format(r.o.b.rec / tB * 100)}%`);
+        return `<li><b>${esc(r.n)}</b> ${bits.join("; ")}.</li>`; };
+      const up = all.filter(r => r.d > 0).sort((x, y) => y.d - x.d), dn = all.filter(r => r.d < 0).sort((x, y) => x.d - y.d);
+      const rest = (a, n) => (a.length > n ? `<li>Outros ${a.length - n}: ${fD(a.slice(n).reduce((x, r) => x + r.d, 0), "rec")} somados.</li>` : "");
+      box.innerHTML = `<div><h4 class="up">Cresceram</h4><ul>${up.slice(0, 4).map(li).join("") + rest(up, 4) || "<li>Nenhum canal cresceu.</li>"}</ul></div>
+        <div><h4 class="down">Caíram</h4><ul>${dn.slice(0, 4).map(li).join("") + rest(dn, 4) || "<li>Nenhum canal caiu.</li>"}</ul></div>`;
+    }
+  }
+  const trows = lines(C[dim], C.met0).filter(r => (r.a || r.b) && pass(r)).sort((x, y) => (s ? y.b - x.b : (y.d ?? 0) - (x.d ?? 0)));
+  table($(`#${P}Table`), fullCols(dim === "canal" ? "Canal" : "Rota"), trows, st, st.dir === "all" && !qn ? { n: "Total", o: C.T } : null);
+}
+
+function mixData() {
+  const tA = C.T.a.rec || C.T.a.bil, tB = C.T.b.rec || C.T.b.bil, k = C.met0;
+  const all = [...C.canal].map(([n, o]) => ({ n, a: tA ? o.a[k] / tA * 100 : 0, b: tB ? o.b[k] / tB * 100 : 0 })).sort((x, y) => Math.max(y.a, y.b) - Math.max(x.a, x.b));
+  const g = all.slice(0, 7), o = all.slice(7);
+  if (o.length) g.push({ n: "Outros", a: o.reduce((s, r) => s + r.a, 0), b: o.reduce((s, r) => s + r.b, 0), others: o.map(r => r.n) });
+  return g;
+}
+function renderMix() {
+  const g = mixData(), max = Math.max(10, Math.ceil(Math.max(...g.flatMap(r => [r.a, r.b])) / 10) * 10), x = v => Math.max(0, Math.min(100, v / max * 100));
+  const ticks = Array.from({ length: max / 10 + 1 }, (_, i) => i * 10).filter((t, i, a) => a.length <= 6 || i % 2 === 0);
+  $("#mixA").textContent = S.A;
+  $("#mixChart").innerHTML = `<div class="dumb-axis"><span></span><span class="ticks">${ticks.map(t => `<span style="left:${x(t)}%">${t}%</span>`).join("")}</span><span></span></div>` +
+    g.map(r => { const d = r.b - r.a, k = Math.abs(d) < .3 ? "" : cls(d);
+      return `<div class="drow2 ${k}"><span class="nm" title="${esc(r.n)}">${esc(r.n)}</span><span class="dtrack"><span class="ln" style="left:${x(Math.min(r.a, r.b))}%;width:${x(Math.abs(d))}%"></span><span class="dot a" style="left:${x(r.a)}%"></span><span class="dot b" style="left:${x(r.b)}%"></span></span><span class="val"><b>${nf1.format(r.b)}%</b> <span class="${k}">(${fPP(d)})</span></span></div>`; }).join("");
+  const v = g.filter(r => !r.others), up = maxBy(v.map(r => ({ ...r, d: r.b - r.a })), "d"), dn = minBy(v.map(r => ({ ...r, d: r.b - r.a })), "d"), f = r => `${nf1.format(r.a)}% para ${nf1.format(r.b)}%`;
+  $("#mixTitle").textContent = [up && up.d > .3 && `${up.n} foi de ${f(up)} da ${MET[C.met0].toLowerCase()}`, dn && dn.d < -.3 && `${dn.n} caiu de ${f(dn)}`].filter(Boolean).join("; ") || "O mix de canais ficou praticamente estável";
+  const oth = g.find(r => r.others);
+  $("#mixNote").textContent = (oth ? `Outros = ${oth.others.join(", ")}. ` : "") + "Variação em pontos percentuais (pp).";
+}
+
+function renderMes() {
+  const k = C.met0, idx = C.single ? "b" : S.mes.esc === "abs" ? "d" : "p";
+  const per = n => C.months.map(mo => ({ m: mo.m, ...L(mo.map.get(n) || Z(), k) }));
+  const names = [...new Set(C.months.flatMap(mo => [...mo.map.keys()]))].map(n => { const p = per(n); return { n, p, w: p.reduce((s, x) => s + Math.abs(C.single ? x.b : x.d ?? 0), 0), sum: p.reduce((s, x) => s + (C.single ? x.b : x.d ?? 0), 0) }; })
+    .filter(r => r.w > 0).sort((x, y) => y.w - x.w).slice(0, 12).sort((x, y) => y.sum - x.sum);
+  const tot = { n: "Total", p: C.months.map(mo => ({ m: mo.m, ...L(mo.t, k) })) };
+  const vals = [tot, ...names].flatMap(r => r.p.map(x => x[idx]).filter(v => v != null));
+  const lo = Math.min(0, ...vals), hi = Math.max(0, ...vals), span = hi - lo || 1, z = -lo / span * 100;
+  $("#mChart").innerHTML = [tot, ...names].map(r => `<div class="mrow"><span class="nm" title="${esc(r.n)}"${r === tot ? ' style="color:var(--white);font-weight:600"' : ""}>${esc(r.n)}</span><div class="mbars">${r.p.map(x => {
+    const v = x[idx];
+    if (v == null) return `<div class="mbar"><span class="k">${MONL[x.m]}</span><span class="track"><span class="zero" style="left:${z}%"></span></span><span class="src">sem base</span></div>`;
+    const w = Math.abs(v) / span * 100, left = v >= 0 ? z : z - w;
+    return `<div class="mbar"><span class="k">${MONL[x.m]}</span><span class="track"><span class="zero" style="left:${z}%"></span><span class="b ${C.single ? "neu" : v >= 0 ? "pos" : "neg"}" style="left:${left}%;width:${Math.max(w, .4)}%"></span></span><span class="${C.single ? "" : cls(x.d)}">${C.single ? fV(x.b, k) : idx === "p" ? fPct(x.p) : fD(x.d, k)}${C.single || idx === "p" ? "" : ` <span style="color:var(--muted)">${fPct(x.p)}</span>`}</span></div>`;
+  }).join("")}</div></div>`).join("");
+  let title = `${MET[k]} por mês em ${S.B}`;
+  if (!C.single) {
+    const flip = maxBy(names.map(r => ({ r, f: r.p[0], l: r.p.at(-1) })).filter(x => x.f.d != null && x.l.d != null && x.f.d * x.l.d < 0).map(x => ({ ...x, w: Math.abs(x.l.d) })), "w");
+    const fall = minBy(names.filter(r => r.p.every(x => x.d != null && x.d < 0)), "sum"), rise = maxBy(names.filter(r => r.p.every(x => x.d != null && x.d > 0)), "sum");
+    title = [flip && `${flip.r.n} vira o sinal em ${MONF[flip.l.m].toLowerCase()} (${fPct(flip.l.p)})`, fall && `${fall.n} cai em todos os meses`, !flip && rise && `${rise.n} cresce em todos os meses`].filter(Boolean).slice(0, 2).join("; ") || "Variação mês a mês por " + C.mdim;
+  }
+  $("#mTitle").textContent = title;
+}
+
+function crRows(canal) { const out = []; for (const [k, o] of C.cr) { const [c, r] = k.split(SEP); if (c === canal) out.push({ n: r, o, ...L(o, C.met0) }); } return out; }
+function renderRPC() {
+  const k = C.met0, s = C.single, all = lines(C.canal, k).sort((x, y) => y.b - x.b).map(r => r.n), def = all.slice(0, 8);
+  const sel = S.rpc.sel ? S.rpc.sel.filter(n => all.includes(n)) : def, isAll = !S.rpc.sel;
+  $("#rpcChips").innerHTML = `<button type="button" class="chip sm" data-k="" aria-pressed="${isAll}">${all.length > 8 ? "Principais" : "Todos"}</button>` + all.map(n => `<button type="button" class="chip sm" data-k="${esc(n)}" aria-pressed="${!isAll && sel.includes(n)}">${esc(n)}</button>`).join("");
+  $("#rpcN").value = String(S.rpc.n);
+  const N = +S.rpc.n;
+  $("#rpcCards").innerHTML = sel.map(c => {
+    const rows = crRows(c), ch = L(C.canal.get(c), k);
+    const ups = s ? rows.sort((x, y) => y.b - x.b).slice(0, N * 2) : rows.filter(r => r.d > 0).sort((x, y) => y.d - x.d).slice(0, N);
+    const dns = s ? [] : rows.filter(r => r.d < 0).sort((x, y) => x.d - y.d).slice(0, N);
+    const mx = Math.max(1, ...[...ups, ...dns].map(r => Math.abs(s ? r.b : r.d)));
+    const li = (r, col) => { const b = L(r.o, "bil"), v = s ? r.b : r.d;
+      return `<div class="rr"><div class="t"><span>${esc(r.n)}</span><b class="${s ? "" : cls(r.d)}">${s ? fV(r.b, k) : fD(r.d, k)}</b></div>
+      <div class="m"><i style="width:${Math.abs(v) / mx * 100}%;background:var(--${col})"></i></div>
+      <div class="x"><span>${s ? (D.has.bil && k === "rec" ? fInt(b.b) + " bilhetes" : "") : `${fV(r.a, k)} → ${fV(r.b, k)}${D.has.bil && k === "rec" ? ` · bilhetes ${fInt(b.a)} → ${fInt(b.b)}` : ""}`}</span><span class="${s ? "" : cls(r.d)}">${s ? (ch.b ? nf1.format(r.b / ch.b * 100) + "% do canal" : "") : r.p == null ? "nova" : r.b === 0 ? "sem vendas" : fPct(r.p)}</span></div></div>`; };
+    return `<article class="card"><div class="card-h"><h3>${esc(c)}</h3><span class="${s ? "" : cls(ch.d)}">${s ? fV(ch.b, k) : `${fD(ch.d, k)} · ${fPct(ch.p)} no canal`}</span></div>
+      <div class="cols${s ? " one" : ""}"><div class="col"><h4 class="${s ? "" : "up"}">${s ? "Maiores rotas" : "Maiores altas"}</h4>${ups.length ? ups.map(r => li(r, s ? "white" : "teal")).join("") : `<p class="none">Nenhuma alta: ${rows.length} rotas caíram ou ficaram estáveis.</p>`}</div>
+      ${s ? "" : `<div class="col"><h4 class="down">Maiores quedas</h4>${dns.length ? dns.map(r => li(r, "red")).join("") : `<p class="none">Nenhuma queda: as ${rows.length} rotas do canal cresceram ou ficaram estáveis.</p>`}</div>`}</div></article>`;
+  }).join("");
+
+  // mapa rota × canal
+  const key = s ? "b" : "d", routes = new Map();
+  for (const [kk, o] of C.cr) { const [c, r] = kk.split(SEP); if (!def.includes(c)) continue; const v = L(o, k)[key]; if (!v) continue; (routes.get(r) || routes.set(r, {}).get(r))[c] = v; }
+  const list = [...routes].map(([n, m]) => ({ n, m, s: Object.values(m).reduce((a, b) => a + b, 0), w: Object.values(m).reduce((a, b) => a + Math.abs(b), 0) })).sort((x, y) => y.w - x.w).slice(0, 16).sort((x, y) => y.s - x.s);
+  const hmax = Math.max(1, ...list.flatMap(r => Object.values(r.m).map(Math.abs))), light = document.documentElement.dataset.mode === "light";
+  const short = v => { const a = Math.abs(v); return (s ? "" : sg(v)) + (k === "bil" ? nf0.format(a) : a >= 1e6 ? nf1.format(a / 1e6) + "M" : a >= 1000 ? nf1.format(a / 1000) + "k" : nf0.format(a)); };
+  $("#heat").innerHTML = `<thead><tr><th></th>${def.map(c => `<th class="eyebrow">${esc(c)}</th>`).join("")}<th class="eyebrow" style="text-align:right">Soma</th></tr></thead><tbody>` +
+    list.map(r => `<tr><td class="r">${esc(r.n)}</td>${def.map(c => { const v = r.m[c]; if (v == null) return `<td class="c">·</td>`;
+      const al = (.14 + .76 * Math.sqrt(Math.abs(v) / hmax)) * (light ? .85 : 1), rgb = s ? "143,143,139" : v > 0 ? "79,158,161" : "236,90,85";
+      return `<td class="c v" style="background:rgba(${rgb},${al.toFixed(2)})" title="${esc(c)} · ${esc(r.n)}: ${s ? fV(v, k) : fD(v, k)}">${short(v)}</td>`; }).join("")}<td class="tot ${s ? "" : cls(r.s)}">${s ? fV(r.s, k) : fD(r.s, k)}</td></tr>`).join("") + "</tbody>";
+  const mg = migration();
+  $("#heatTitle").textContent = mg ? `${mg.n}: ${mg.up} ganha ${fV(mg.g, k)} enquanto ${mg.dn} perde ${fV(Math.abs(mg.l), k)}` : s ? `Receita por rota e canal em ${S.B}` : "Onde cada canal mexeu em cada rota";
+}
+// rota em que um canal ganha e outro perde ao mesmo tempo (possível troca entre canais)
+function migration() {
+  if (C.single || !D.has.canal || !D.has.rota) return null;
+  const by = new Map();
+  for (const [kk, o] of C.cr) { const [c, r] = kk.split(SEP), d = L(o, C.met0).d; if (d) (by.get(r) || by.set(r, []).get(r)).push({ c, d }); }
+  let best = null;
+  for (const [n, a] of by) { const up = maxBy(a, "d"), dn = minBy(a, "d"); if (up.d > 0 && dn.d < 0) { const sc = Math.min(up.d, -dn.d); if (!best || sc > best.sc) best = { n, up: up.c, g: up.d, dn: dn.c, l: dn.d, sc }; } }
+  return best;
+}
+
+function renderConcl() {
+  const k = C.met0, T = L(C.T, k), cards = [], notes = [], card = (tag, h, p) => cards.push(`<article><span class="tag" style="background:var(--${tag})"></span><h3>${esc(h)}</h3><p>${p}</p></article>`);
+  const tA = C.T.a[k], tB = C.T.b[k];
+  if (D.has.canal && tA && tB) {
+    const sh = lines(C.canal, k).map(r => ({ n: r.n, a: r.a / tA * 100, b: r.b / tB * 100 })), top = maxBy(sh, "b");
+    if (top) card(top.b > top.a ? "teal" : "muted", top.b - top.a > 2 ? `Dependência crescente de ${top.n}` : `${top.n} é o maior canal`, `${nf1.format(top.b)}% da ${MET[k].toLowerCase()}, contra ${nf1.format(top.a)}% em ${esc(S.A)}.${top.b >= 30 ? " Concentra resultado e também risco." : ""}`);
+  }
+  const mg = migration();
+  if (mg) card("white", `Possível migração em ${mg.n}`, `${esc(mg.up)} ${fD(mg.g, k)}; ${esc(mg.dn)} ${fD(mg.l, k)}. Sugere troca parcial entre canais; a base não confirma a causa.`);
+  if (D.has.rec && D.has.bil) {
+    const M = L(C.T, "tm"), ch = D.has.canal ? lines(C.canal, "tm").filter(r => r.p != null && r.o.b.rec / (C.T.b.rec || 1) >= .05) : [], w = M.d < 0 ? minBy(ch, "p") : maxBy(ch, "p");
+    if (M.p != null) card(M.d < 0 ? "red" : "teal", Math.abs(M.p) < 1 ? "Ticket médio estável" : M.d < 0 ? "Queda de ticket médio merece atenção" : "Ticket médio em alta", `TM total ${fPct(M.p)} (${fV(M.a, "tm")} → ${fV(M.b, "tm")})${w ? `; ${esc(w.n)} ${fPct(w.p)}` : ""}.${M.d < 0 ? " Vale olhar política de preço, promoções e mix de trechos." : ""}`);
+  }
+  if (C.dec) { const { vol, pre, tot } = C.dec; card(tot >= 0 ? "teal" : "red", Math.abs(vol) >= Math.abs(pre) ? "Resultado movido por volume" : "Resultado movido por preço", `Efeito volume ${fD(vol, "rec")}, efeito preço ${fD(pre, "rec")}; variação total ${fD(tot, "rec")}.`); }
+  if (D.has.rota) { // cidade que aparece em mais rotas em queda
+    const city = new Map();
+    for (const r of lines(C.rota, k)) { if (r.d == null) continue; const parts = r.n.split(/\s*(?:›|→|->|–|—|\s-\s|\sx\s|\/)\s*/i).map(x => x.trim()).filter(Boolean); if (parts.length < 2) continue;
+      for (const c of new Set(parts)) { const o = city.get(c) || city.set(c, { n: c, d: 0, dn: 0, tot: 0 }).get(c); o.d += r.d; o.tot++; if (r.d < 0) o.dn++; } }
+    const bad = minBy([...city.values()].filter(c => c.dn >= 2 && c.d < 0 && c.dn / c.tot >= .5), "d");
+    if (bad) card("red", `${bad.n} exige atenção`, `${bad.dn} das ${bad.tot} rotas de e para ${esc(bad.n)} perderam ${MET[k].toLowerCase()}: ${fD(bad.d, k)} somados.`);
+    const rt = lines(C.rota, k).filter(r => r.d != null), up5 = rt.filter(r => r.d > 0).sort((x, y) => y.d - x.d).slice(0, 5);
+    if (up5.length >= 3) card("teal", "Crescimento concentrado em poucas rotas", `As ${up5.length} maiores altas somam ${fD(up5.reduce((s, r) => s + r.d, 0), k)}${T.d ? `, contra ${fD(T.d, k)} líquidos no total` : ""}. Lidera: ${esc(up5[0].n)}.`);
+  }
+  if (C.months.length >= 2) {
+    const mp = C.months.map(mo => ({ m: mo.m, ...L(mo.t, k) })).filter(x => x.p != null);
+    if (mp.length >= 2) { const f = mp[0], l = mp.at(-1); card("muted", `${MONF[l.m]} mostra ${l.p > f.p ? "aceleração" : "desaceleração"}`, `${MET[k]} ${fPct(l.p)} em ${MONF[l.m].toLowerCase()}, contra ${fPct(f.p)} em ${MONF[f.m].toLowerCase()}.`); }
+    const vb = C.months.map(mo => ({ m: mo.m, v: mo.t.b[k], va: mo.t.a[k] })), mx = maxBy(vb, "v");
+    for (const x of vb) if (mx.v > 0 && x.v / mx.v < .5) notes.push(`<b>${MONF[x.m]} parece incompleto:</b> equivale a ${nf0.format(x.v / mx.v * 100)}% de ${MONF[mx.m].toLowerCase()} em ${esc(S.B)}${mx.va ? ` e ${nf0.format(x.va / (maxBy(vb, "va").va || 1) * 100)}% em ${esc(S.A)}` : ""}; a comparação presume o mesmo corte nos dois períodos.`);
+  }
+  if (D.subs.length && D.subs.length <= 3) notes.push(`<b>Janela curta:</b> a base cobre só ${D.subs.map(m => MONF[m].toLowerCase()).join(" e ")}; as tendências não representam o ano.`);
+  const inScope = D.recs.filter(r => (r.g === S.A || r.g === S.B) && (S.sub == null || r.s === S.sub));
+  const neg = inScope.filter(r => r.rec < 0);
+  if (neg.length) notes.push(`<b>${neg.length} ${neg.length > 1 ? "linhas negativas" : "linha negativa"}</b> (${fD(neg.reduce((s, r) => s + r.rec, 0), "rec")}), provavelmente cancelamentos ou estornos; mantidas no cálculo.`);
+  if (D.has.canal) {
+    const ch = lines(C.canal, k), small = ch.filter(r => r.a > 0 && tA && r.a / tA < .01 && Math.abs(r.p) >= 50).map(r => r.n), gone = ch.filter(r => r.a > 0 && !r.b).map(r => r.n), born = ch.filter(r => !r.a && r.b > 0).map(r => r.n);
+    if (small.length) notes.push(`<b>Bases pequenas:</b> ${small.map(esc).join(", ")} ${small.length > 1 ? "têm" : "tem"} menos de 1% da ${MET[k].toLowerCase()} anterior; a variação percentual é grande, o impacto é pequeno.`);
+    if (gone.length) notes.push(`<b>Sem vendas em ${esc(S.B)}:</b> ${gone.map(esc).join(", ")}.`);
+    if (born.length) notes.push(`<b>Sem vendas em ${esc(S.A)}:</b> ${born.map(esc).join(", ")}; não há Δ % para ${born.length > 1 ? "esses canais" : "esse canal"}.`);
+  }
+  $("#ins").innerHTML = cards.join(""); $("#notes").innerHTML = notes.map(n => `<li>${n}</li>`).join(""); $("#notes").hidden = !notes.length;
+}
+
+function render() {
+  compute();
+  for (const dim of ["canal", "rota"]) document.querySelectorAll(`[data-s="${dim}.met"] button`).forEach(b => (b.hidden = b.dataset.v === "tm" ? !(D.has.rec && D.has.bil) : !D.has[b.dataset.v]));
+  document.querySelectorAll(".cmp-only").forEach(e => (e.hidden = C.single));
+  renderTop();
+  const on = MODS.filter(([k]) => avail(k));
+  $("#modChips").innerHTML = on.map(([k, n]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${!S.hide.includes(k)}">${n}</button>`).join("");
+  document.querySelectorAll(".mod").forEach(m => (m.hidden = !avail(m.dataset.mod) || S.hide.includes(m.dataset.mod)));
+  const vis = k => avail(k) && !S.hide.includes(k);
+  if (vis("canais")) renderDim("canal");
+  if (vis("mix")) renderMix();
+  if (vis("mes")) renderMes();
+  if (vis("rotas")) renderDim("rota");
+  if (vis("rpc")) renderRPC();
+  if (vis("concl")) renderConcl();
+  document.querySelectorAll(".seg[data-s]").forEach(seg => { const [a, b] = seg.dataset.s.split("."); seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === S[a][b])); });
+  $("#files").innerHTML = D.sources.map((s, i) => `<div class="file"><span title="${esc(s.file)}">${esc(s.file)}${s.sheet && s.name === s.sheet ? " · " + esc(s.sheet) : ""}</span><small>${valid(s) ? nf0.format(s.rows.length) + " linhas" : "colunas?"}</small><button type="button" data-rm="${i}" aria-label="Remover">×</button></div>`).join("");
+  $("#foot").textContent = `${nf0.format(D.recs.length)} registros · ${D.sources.length} ${D.sources.length > 1 ? "fontes" : "fonte"} · processado no navegador`;
+}
+
+/* ==================================================================
+   Interação
+   ================================================================== */
+const pick = $("#pick");
+$("#dz").onclick = () => pick.click();
+pick.onchange = () => { if (pick.files.length) ingest([...pick.files]); pick.value = ""; };
+let dragN = 0;
+addEventListener("dragenter", e => { if (e.dataTransfer?.types?.includes("Files")) { dragN++; $("#veil").classList.add("on"); } });
+addEventListener("dragleave", () => { if (--dragN <= 0) { dragN = 0; $("#veil").classList.remove("on"); } });
+addEventListener("dragover", e => e.preventDefault());
+addEventListener("drop", e => { e.preventDefault(); dragN = 0; $("#veil").classList.remove("on"); const f = [...(e.dataTransfer?.files || [])]; if (f.length) ingest(f); });
+
+document.addEventListener("click", e => {
+  const sb = e.target.closest(".seg[data-s] button");
+  if (sb) { const [a, b] = sb.parentElement.dataset.s.split("."); S[a][b] = sb.dataset.v; if (b === "met") S[a].sort = null; return render(); }
+  if (e.target.closest("[data-theme-toggle]")) { const r = document.documentElement; r.dataset.mode = r.dataset.mode === "light" ? "dark" : "light"; try { localStorage.setItem("revenue-mode", r.dataset.mode); } catch (x) {} if (D.recs.length) render(); return; }
+  const m = $("#menu"); if (m.open && !m.contains(e.target)) m.open = false;
+});
+try { document.documentElement.dataset.mode = localStorage.getItem("revenue-mode") || "dark"; } catch (x) { document.documentElement.dataset.mode = "dark"; }
+$("#selA").onchange = e => { S.A = e.target.value; render(); };
+$("#selB").onchange = e => { S.B = e.target.value; if (S.A === S.B) S.A = D.groups.find(g => g !== S.B) ?? null; render(); };
+$("#subs").onclick = e => { const b = e.target.closest("button"); if (b) { S.sub = b.dataset.m ? +b.dataset.m : null; render(); } };
+$("#modChips").onclick = e => { const b = e.target.closest("button"); if (!b) return; const k = b.dataset.k; S.hide = S.hide.includes(k) ? S.hide.filter(x => x !== k) : [...S.hide, k]; render(); };
+$("#rQ").oninput = e => { S.rota.q = e.target.value; render(); };
+$("#rMore").onclick = () => { S.rota.all = !S.rota.all; render(); };
+$("#rpcN").onchange = e => { S.rpc.n = +e.target.value; render(); };
+$("#rpcChips").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return; const k = b.dataset.k;
+  if (!k) S.rpc.sel = null; else if (!S.rpc.sel) S.rpc.sel = [k]; else { S.rpc.sel = S.rpc.sel.includes(k) ? S.rpc.sel.filter(x => x !== k) : [...S.rpc.sel, k]; if (!S.rpc.sel.length) S.rpc.sel = null; }
+  render();
+};
+$("#files").onclick = e => { const b = e.target.closest("[data-rm]"); if (b) { D.sources.splice(+b.dataset.rm, 1); rebuild(); } };
+$("#menu").addEventListener("click", e => {
+  const act = e.target.closest("[data-act]")?.dataset.act; if (!act) return;
+  $("#menu").open = false;
+  if (act === "add") pick.click();
+  if (act === "map") openMap();
+  if (act === "reset") { D.sources = []; rebuild(); }
+});
+
+/* ---------- ajuste manual de colunas ---------- */
+function openMap(msg) {
+  const src = D.sources.find(s => !valid(s)) || D.sources[0]; if (!src) return;
+  if (msg) $("#mapMsg").textContent = msg;
+  $("#mapGrid").innerHTML = ROLES.map(([k, l]) => `<label for="mp-${k}">${l}</label><select id="mp-${k}" data-k="${k}"><option value="">—</option>${src.headers.map((h, i) => (h ? `<option value="${i}"${src.map[k] === i ? " selected" : ""}>${esc(h)}</option>` : "")).join("")}</select>`).join("");
+  $("#mapDlg").showModal();
+  $("#mapOk").onclick = () => {
+    const byName = {};
+    $("#mapGrid").querySelectorAll("select").forEach(s => { if (s.value !== "") byName[s.dataset.k] = src.headers[+s.value]; });
+    for (const s of D.sources) { // a mesma escolha vale para os outros arquivos com as mesmas colunas
+      const m = {}; for (const [k, h] of Object.entries(byName)) { const i = s.headers.indexOf(h); if (i >= 0) m[k] = i; }
+      if (s === src || Object.keys(m).length === Object.keys(byName).length) { s.map = m; s.wide = []; }
+    }
+    $("#mapDlg").close(); rebuild();
+    if (!D.recs.length) toast("Ainda falta Canal ou Rota e uma medida.");
+  };
+}
+$("#mapCancel").onclick = () => $("#mapDlg").close();
+
+/* ==================================================================
+   Exportação
+   ================================================================== */
+const stamp = () => `revenue-${String(S.B).replace(/\W+/g, "")}${C.single ? "" : "x" + String(S.A).replace(/\W+/g, "")}`;
+function sheetOf(dim, first) {
+  const s = C.single, head = [first, ...(s ? [] : ["Receita " + S.A]), "Receita " + S.B, ...(s ? [] : ["Δ R$", "Δ %", "Bilhetes " + S.A]), "Bilhetes " + S.B, ...(s ? [] : ["Δ % bilhetes", "TM " + S.A]), "TM " + S.B, "Part. %"];
+  const r2 = v => (v == null ? null : Math.round(v * 100) / 100), tb = C.T.b.rec;
+  const row = (n, o) => { const r = L(o, "rec"), b = L(o, "bil"), t = L(o, "tm"); return [n, ...(s ? [] : [r2(r.a)]), r2(r.b), ...(s ? [] : [r2(r.d), r2(r.p), b.a]), b.b, ...(s ? [] : [r2(b.p), r2(t.a)]), r2(t.b), tb ? r2(o.b.rec / tb * 100) : null]; };
+  return [head, ...[...C[dim]].sort((x, y) => y[1].b.rec - x[1].b.rec).map(([n, o]) => row(n, o)), row("Total", C.T)];
+}
+function buildXLSX() {
+  if (!window.XLSX) return toast("Exportação indisponível sem internet.");
+  const wb = XLSX.utils.book_new(), add = (n, aoa) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), n), r2 = v => (v == null ? null : Math.round(v * 100) / 100);
+  const res = [["Vendas por canal e rota", perLabel()], [], ["Indicador", ...(C.single ? [] : [S.A]), S.B, ...(C.single ? [] : ["Δ", "Δ %"])]];
+  for (const k of ["rec", "bil", "tm"]) { const x = L(C.T, k); res.push([MET[k], ...(C.single ? [] : [r2(x.a)]), r2(x.b), ...(C.single ? [] : [r2(x.d), r2(x.p)])]); }
+  if (C.dec) res.push([], ["Efeito volume", r2(C.dec.vol)], ["Efeito preço", r2(C.dec.pre)], ["Variação total", r2(C.dec.tot)]);
+  add("Resumo", res);
+  if (D.has.canal) add("Canais", sheetOf("canal", "Canal"));
+  if (D.has.rota) add("Rotas", sheetOf("rota", "Rota"));
+  if (D.has.canal && D.has.rota) add("Canal x Rota", [["Canal", "Rota", "Receita " + (S.A ?? ""), "Receita " + S.B, "Δ R$", "Δ %", "Bilhetes " + (S.A ?? ""), "Bilhetes " + S.B],
+    ...[...C.cr].map(([k, o]) => { const [c, r] = k.split(SEP), x = L(o, "rec"), b = L(o, "bil"); return [c, r, r2(x.a), r2(x.b), r2(x.d), r2(x.p), b.a, b.b]; }).sort((x, y) => x[0].localeCompare(y[0], "pt-BR") || (y[4] ?? 0) - (x[4] ?? 0))]);
+  if (C.months.length > 1) add("Mês a mês", [[C.mdim === "canal" ? "Canal" : "Rota", "Mês", "Receita " + (S.A ?? ""), "Receita " + S.B, "Δ R$", "Δ %", "Bilhetes " + (S.A ?? ""), "Bilhetes " + S.B],
+    ...C.months.flatMap(mo => [...mo.map].map(([n, o]) => { const x = L(o, "rec"), b = L(o, "bil"); return [n, MONF[mo.m], r2(x.a), r2(x.b), r2(x.d), r2(x.p), b.a, b.b]; }))]);
+  XLSX.writeFile(wb, stamp() + ".xlsx");
+}
+async function buildPPTX() {
+  if (!window.PptxGenJS) return toast("PowerPoint indisponível sem internet.");
+  const light = document.documentElement.dataset.mode === "light", BG = light ? "F7F7F3" : "000000", FG = light ? "151514" : "F5F5F2", MU = light ? "6A6A65" : "8F8F8B", LN = light ? "D5D5CF" : "2A2A28", TE = "4F9EA1", RE = "EC5A55", F = "Segoe UI";
+  const p = new PptxGenJS(); p.layout = "LAYOUT_WIDE";
+  const slide = (eyebrow, title) => { const s = p.addSlide(); s.background = { color: BG };
+    s.addText("REVENUE", { x: .5, y: .3, w: 4, h: .3, fontFace: F, fontSize: 9, charSpacing: 6, color: FG, bold: true });
+    s.addText(eyebrow.toUpperCase(), { x: .5, y: .8, w: 12.3, h: .3, fontFace: F, fontSize: 9, charSpacing: 3, color: MU });
+    s.addText(title, { x: .5, y: 1.1, w: 12.3, h: .8, fontFace: F, fontSize: 24, bold: true, color: FG, fit: "shrink" }); return s; };
+  const strip = h => h.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+  const col = v => (v > 0 ? TE : v < 0 ? RE : FG);
+  // capa
+  const c = p.addSlide(); c.background = { color: BG };
+  c.addText("REVENUE", { x: .6, y: .5, w: 6, h: .4, fontFace: F, fontSize: 11, charSpacing: 8, color: FG, bold: true });
+  c.addText("Vendas por canal e rota", { x: .6, y: 2.3, w: 12, h: 1.2, fontFace: F, fontSize: 54, bold: true, color: FG });
+  c.addText(perLabel(), { x: .6, y: 3.5, w: 12, h: .8, fontFace: F, fontSize: 32, color: MU });
+  c.addText(strip($("#lead").innerHTML), { x: .6, y: 4.8, w: 8.5, h: 1.6, fontFace: F, fontSize: 14, color: MU, valign: "top" });
+  // resumo
+  const r = slide("Resumo · " + perLabel(), strip($("#lead").innerHTML).split(". ")[0] + ".");
+  const ks = [D.has.rec && "rec", D.has.bil && "bil", D.has.rec && D.has.bil && "tm"].filter(Boolean);
+  ks.forEach((k, i) => { const x = L(C.T, k), X = .5 + i * 4.2;
+    r.addText(MET[k].toUpperCase(), { x: X, y: 2.4, w: 3.9, h: .3, fontFace: F, fontSize: 9, charSpacing: 3, color: MU });
+    r.addText(fV(x.b, k), { x: X, y: 2.7, w: 3.9, h: .9, fontFace: F, fontSize: 36, bold: true, color: FG });
+    if (!C.single) r.addText([{ text: fPct(x.p) + "  ", options: { color: col(x.d), bold: true } }, { text: "era " + fV(x.a, k), options: { color: MU } }], { x: X, y: 3.6, w: 3.9, h: .4, fontFace: F, fontSize: 13 }); });
+  if (C.dec) r.addText([{ text: "Efeito volume ", options: { color: MU } }, { text: fD(C.dec.vol, "rec"), options: { color: col(C.dec.vol), bold: true } }, { text: "     Efeito preço ", options: { color: MU } }, { text: fD(C.dec.pre, "rec"), options: { color: col(C.dec.pre), bold: true } }], { x: .5, y: 4.6, w: 12, h: .5, fontFace: F, fontSize: 16 });
+  // tabelas
+  const tbl = (dim, name, n) => { if (!D.has[dim]) return; const k = C.met0, rows = lines(C[dim], k).filter(x => x.a || x.b).sort((x, y) => (C.single ? y.b - x.b : (y.d ?? 0) - (x.d ?? 0)));
+    const pickRows = rows.length > n ? [...rows.slice(0, Math.ceil(n / 2)), ...rows.slice(-Math.floor(n / 2))] : rows;
+    const s = slide(name + " · " + perLabel(), insight(dim, k)), hd = t => ({ text: t, options: { color: MU, fontSize: 9, bold: true, border: [{ type: "none" }, { type: "none" }, { pt: 1, color: LN }, { type: "none" }] } });
+    const cell = (t, o = {}) => ({ text: t, options: { color: FG, fontSize: 11, border: [{ type: "none" }, { type: "none" }, { pt: .5, color: LN }, { type: "none" }], ...o } });
+    s.addTable([[hd(name.replace(/s$/, "").replace(/i$/, "l")), ...(C.single ? [] : [hd(S.A)]), hd(S.B), ...(C.single ? [] : [hd("Δ"), hd("Δ %")])].map((h, i) => (i ? { ...h, options: { ...h.options, align: "right" } } : h)),
+      ...pickRows.map(x => [cell(x.n), ...(C.single ? [] : [cell(fV(x.a, k), { align: "right" })]), cell(fV(x.b, k), { align: "right" }), ...(C.single ? [] : [cell(fD(x.d, k), { align: "right", color: col(x.d), bold: true }), cell(fPct(x.p), { align: "right", color: col(x.d) })])])],
+      { x: .5, y: 2.1, w: 12.3, fontFace: F, rowH: .3, colW: C.single ? [8.3, 4] : [5.1, 1.9, 1.9, 1.9, 1.5] }); };
+  tbl("canal", "Canais", 12); tbl("rota", "Rotas", 14);
+  // conclusões
+  const ins = [...document.querySelectorAll("#ins article")].map(a => ({ h: a.querySelector("h3").textContent, p: a.querySelector("p").textContent }));
+  if (ins.length && !C.single) { const s = slide("Para a reunião", "Pontos de atenção");
+    ins.slice(0, 6).forEach((x, i) => { const X = .5 + (i % 3) * 4.2, Y = 2.2 + Math.floor(i / 3) * 2.4;
+      s.addText(x.h, { x: X, y: Y, w: 3.9, h: .6, fontFace: F, fontSize: 15, bold: true, color: FG, valign: "top", fit: "shrink" });
+      s.addText(x.p, { x: X, y: Y + .6, w: 3.9, h: 1.5, fontFace: F, fontSize: 11, color: MU, valign: "top" }); }); }
+  await p.writeFile({ fileName: stamp() + ".pptx" });
+}
+async function busy(btn, fn) { btn.disabled = true; try { await fn(); } catch (e) { console.error(e); toast("Não consegui gerar o arquivo."); } btn.disabled = false; }
+$("#xls").onclick = e => busy(e.currentTarget, buildXLSX);
+$("#ppt").onclick = e => busy(e.currentTarget, buildPPTX);
+$("#pdf").onclick = () => { toast("Na janela de impressão, escolha “Salvar como PDF”."); setTimeout(() => print(), 350); };
+
+/* ---------- exemplo (fictício) e modelo ---------- */
+const HEAD = ["Canal", "Rota", "Ano", "Mês", "Receita", "Bilhetes"];
+function demoAOA() {
+  // dados inventados, só para mostrar o painel: canal [peso 2025, crescimento, ticket 2025, Δ ticket]
+  const Cn = [["Site", 330, -.08, 146, -.1], ["App", 230, .62, 168, -.06], ["Agência parceira", 186, .07, 136, -.02], ["Agência própria", 127, -.06, 134, -.05], ["Outlet", 28, .8, 64, 0], ["Clube", 22, .18, 93, .01], ["Totem", 5, 1.1, 170, .04], ["Marketplace", 3, 1.4, 120, -.3]];
+  const Rt = [["Curitiba › Porto Alegre", 183, .3], ["Porto Alegre › Curitiba", 189, .16], ["Porto Alegre › Joinville", 101, .3], ["Joinville › Porto Alegre", 115, .18], ["Porto Alegre › Balneário Camboriú", 81, .23], ["Balneário Camboriú › Porto Alegre", 90, .09], ["Araranguá › Curitiba", 30, .03], ["Curitiba › Araranguá", 23, -.02], ["Curitiba › Torres", 19, .01], ["Torres › Curitiba", 20, -.15], ["Joinville › Osório", 11, .2], ["Osório › Joinville", 11, -.2], ["Curitiba › Osório", 22, -.24], ["Osório › Curitiba", 22, -.31]];
+  const h = s => { let x = 2166136261; for (const c of s) x = Math.imul(x ^ c.charCodeAt(0), 16777619); return ((x >>> 0) % 1000) / 1000; }; // ruído determinístico 0..1
+  const rows = [HEAD], tR = Rt.reduce((s, r) => s + r[1], 0);
+  for (const [c, w, g, tk, dtk] of Cn) for (const [r, rw, rg] of Rt) for (const [mes, mw, mg] of [["Setembro", .78, 0], ["Outubro", .22, .12]]) {
+    if (w < 10 && h(c + r) < .45) continue; // canais pequenos não vendem todas as rotas
+    const base = w * 1000 * rw / tR * mw * (.7 + .6 * h(c + r + mes)), t25 = tk * (.9 + .2 * h(r + c));
+    const grow = (1 + g + mg * (g > 0 ? 1 : .6)) * (1 + rg * (.5 + h(r + c + "g"))) * (c === "App" && r === "Curitiba › Porto Alegre" ? 1.6 : 1) * (c === "Site" && r === "Curitiba › Porto Alegre" ? .62 : 1);
+    const r26 = base * grow, t26 = t25 * (1 + dtk);
+    rows.push([c, r, 2025, mes, Math.round(base * 100) / 100, Math.max(1, Math.round(base / t25))], [c, r, 2026, mes, Math.round(r26 * 100) / 100, Math.max(1, Math.round(r26 / t26))]);
+  }
+  return rows;
+}
+$("#demo").onclick = () => { const d = detect(demoAOA()); D.sources = [{ ...d, file: "Exemplo (dados fictícios)", name: "Exemplo" }]; rebuild(); };
+$("#tpl").onclick = () => {
+  const csv = [HEAD, ["App", "Curitiba › Porto Alegre", 2025, "Setembro", "31800,50", 243], ["App", "Curitiba › Porto Alegre", 2026, "Setembro", "82100,00", 680], ["Site", "Porto Alegre › Curitiba", 2025, "Setembro", "55400,00", 380], ["Site", "Porto Alegre › Curitiba", 2026, "Setembro", "49900,00", 371]].map(r => r.join(";")).join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" })); a.download = "modelo-vendas-canal-rota.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+</script>
+</body>
+</html>

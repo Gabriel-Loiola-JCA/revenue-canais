@@ -111,13 +111,14 @@ button { cursor: pointer; }
   border-block: 1px solid var(--line); display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding-block: 12px;
 }
 .bar .sp { flex: 1; }
+#prog { position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--white); transform-origin: left; transform: scaleX(0); }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip { border: 1px solid var(--line-strong); background: transparent; border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--muted); transition: all .2s; }
 .chip:hover { color: var(--white); }
 .chip[aria-pressed="true"] { background: var(--white); color: var(--black); border-color: var(--white); }
 .chip.sm { padding: 4px 10px; font-size: 11px; }
-.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px; }
-.seg button { border: 0; background: transparent; padding: 5px 12px; border-radius: 999px; font-size: 12px; color: var(--muted); }
+.seg { position: relative; display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px; }
+.seg button { position: relative; z-index: 1; border: 0; background: transparent; padding: 5px 12px; border-radius: 999px; font-size: 12px; color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--white); color: var(--black); }
 select.sel { appearance: none; background: var(--black); border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px; font-size: 12px; max-width: 34vw; }
 .cmp { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
@@ -151,12 +152,14 @@ main { display: grid; padding-bottom: 40px; }
 
 /* barras divergentes */
 .div-chart { display: grid; gap: 4px; }
-.drow { display: grid; grid-template-columns: minmax(96px, 230px) minmax(0, 1fr) minmax(108px, auto); gap: 14px; align-items: center; min-height: 26px; animation: rise .5s var(--ease) both; animation-delay: calc(var(--i, 0) * 18ms); }
+.drow { display: grid; grid-template-columns: minmax(96px, 230px) minmax(0, 1fr) minmax(108px, auto); gap: 14px; align-items: center; min-height: 26px; transition: transform .7s var(--ease), opacity .3s; }
+.drow.enter { animation: rise .6s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 22ms); }
+.div-chart:hover .drow:not(:hover) { opacity: .45; }
 .drow .nm { font-size: 13px; color: var(--muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .drow.hi .nm { color: var(--white); }
 .track { position: relative; height: 18px; }
-.track .zero { position: absolute; top: -4px; bottom: -4px; width: 1px; background: var(--line-strong); }
-.track .b { position: absolute; top: 0; bottom: 0; background: var(--gray-bar); border-radius: 2px; animation: grow .7s var(--ease) both; transform-origin: left; }
+.track .zero { position: absolute; top: -4px; bottom: -4px; width: 1px; background: var(--line-strong); transition: left .7s var(--ease); }
+.track .b { position: absolute; top: 0; bottom: 0; background: var(--gray-bar); border-radius: 2px; transition: left .7s var(--ease), width .7s var(--ease), background .3s; transform-origin: left; }
 .track .b.neg { transform-origin: right; }
 .drow.hi .b.pos, .mbar .b.pos { background: var(--teal); }
 .drow.hi .b.neg, .mbar .b.neg { background: var(--red); }
@@ -206,7 +209,7 @@ tfoot td { font-weight: 600; border-top: 1px solid var(--line-strong); border-bo
 
 /* rotas por canal */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 14px; }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 16px; min-width: 0; container-type: inline-size; align-content: start; }
+.card { transition: border-color .3s; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 16px; min-width: 0; container-type: inline-size; align-content: start; }
 .card-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .card-h h3 { margin: 0; font-size: 20px; letter-spacing: -.02em; font-weight: 600; }
 .card-h span { font-size: 12px; }
@@ -220,7 +223,7 @@ tfoot td { font-weight: 600; border-top: 1px solid var(--line-strong); border-bo
 .rr .t span:first-child { overflow-wrap: anywhere; }
 .rr .t b { font-weight: 600; white-space: nowrap; }
 .rr .m { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
-.rr .m i { display: block; height: 100%; border-radius: 2px; }
+.rr .m i { display: block; height: 100%; border-radius: 2px; transform-origin: left; }
 .rr .x { font-size: 11px; color: var(--muted); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 .rr .x span:last-child { white-space: nowrap; }
 @container (max-width: 470px) { .cols { grid-template-columns: minmax(0, 1fr); } }
@@ -232,7 +235,8 @@ tfoot td { font-weight: 600; border-top: 1px solid var(--line-strong); border-bo
 .heat th { background: transparent; cursor: default; padding: 4px 6px; text-align: center; }
 .heat td.r { font-size: 12px; color: var(--muted); text-align: right; padding-right: 8px; }
 .heat td.c { height: 34px; text-align: center; font-size: 11.5px; border-radius: 4px; background: var(--panel); color: var(--faint); }
-.heat td.c.v { color: var(--white); font-weight: 500; }
+.heat td.c.v { color: var(--white); font-weight: 500; transition: transform .25s var(--ease); cursor: default; }
+.heat td.c.v:hover { transform: scale(1.1); }
 .heat td.tot { font-size: 12px; text-align: right; padding-left: 10px; font-weight: 600; }
 .heat tbody tr:hover td { background: transparent; } .heat tbody tr:hover td.c:not(.v) { background: var(--panel); }
 
@@ -263,6 +267,46 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 .map select { width: 100%; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }
 .dlg-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 
+/* ---------- movimento ---------- */
+.btn, .chip, .dz, .link { transition: background .25s, color .25s, border-color .25s, transform .25s var(--ease); }
+.seg button { transition: color .3s, transform .2s var(--ease); }
+.btn:active, .chip:active, .seg button:active { transform: scale(.96); }
+.dz:hover { transform: translateY(-2px); }
+.card:hover { border-color: var(--line-strong); }
+.seg .thumb { position: absolute; top: 2px; bottom: 2px; left: 0; border-radius: 999px; background: var(--white); transition: transform .45s var(--ease), width .45s var(--ease); pointer-events: none; }
+.seg.th button[aria-pressed="true"] { background: transparent; }
+/* cada bloco entra quando chega na tela; as barras só crescem nesse momento */
+.rv > * { opacity: 0; transform: translateY(22px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+.rv > :nth-child(2) { transition-delay: .1s; } .rv > :nth-child(3) { transition-delay: .2s; } .rv > :nth-child(4) { transition-delay: .3s; }
+.rv.in > * { opacity: 1; transform: none; }
+.rv:not(.in) .b, .rv:not(.in) .rr .m i { animation: none; transform: scaleX(0); }
+.rv.in .b, .rv.in .rr .m i { animation: grow 1s var(--ease) backwards; animation-delay: calc(.15s + var(--i, 0) * 22ms); }
+.b.tw { animation: none !important; }
+.rv:not(.in) .dtrack .ln { opacity: 0; }
+.rv:not(.in) .dot.b { left: var(--from) !important; }
+.rv.in .dot.b { animation: slide 1.1s var(--ease) backwards .25s; }
+.rv.in .dtrack .ln { animation: span 1.1s var(--ease) backwards .25s; }
+.drow2, .mrow, .card, .ins article { animation: rise .6s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+tbody tr, .two li, .notes li { animation: fade .6s var(--ease) backwards; }
+.title-insight, .hero .lead { animation: fade .6s var(--ease); }
+.pop { animation: rise .3s var(--ease); } dialog[open] { animation: rise .35s var(--ease); }
+.start-mid > * { animation: rise .9s var(--ease) backwards; }
+.start-mid > :nth-child(2) { animation-delay: .25s; } .start-mid > :nth-child(3) { animation-delay: .35s; } .start-mid > :nth-child(4) { animation-delay: .45s; } .start-mid > :nth-child(5) { animation-delay: .55s; }
+.lg-b { transform-box: fill-box; transform-origin: bottom; animation: up 1s var(--ease) backwards; }
+.lg-b:nth-of-type(2) { animation-delay: .14s; } .lg-b:nth-of-type(3) { animation-delay: .28s; }
+.lg-c { animation: fade .8s ease backwards .75s; }
+.tip { position: fixed; left: 0; top: 0; z-index: 90; pointer-events: none; background: var(--white); color: var(--black); font-size: 12px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; transform: translateY(4px); transition: opacity .18s, transform .18s; }
+.tip.on { opacity: 1; transform: none; }
+#load { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 90; pointer-events: none; opacity: 0; transition: opacity .3s; background: linear-gradient(90deg, transparent, var(--teal), var(--red), transparent) no-repeat; background-size: 50% 100%; }
+body.busy #load { opacity: 1; animation: sweep 1s linear infinite; }
+body.busy .dz { opacity: .5; pointer-events: none; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes up { from { transform: scaleY(0); } }
+@keyframes slide { from { left: var(--from); } }
+@keyframes span { from { left: var(--from); width: 0; } }
+@keyframes sweep { from { background-position: -100% 0; } to { background-position: 200% 0; } }
+
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 @keyframes grow { from { transform: scaleX(0); } }
 @media (max-width: 960px) {
@@ -282,12 +326,14 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
   .cols, .two { grid-template-columns: 1fr; }
   .bar { position: static; }
 }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } .rv > * { opacity: 1 !important; transform: none !important; } .rv .b, .rv .rr .m i { transform: none !important; } .rv .dtrack .ln { opacity: 1 !important; } }
 @media print {
   :root, :root[data-mode] { color-scheme: light; --black: #fff; --panel: #fff; --panel-2: #f4f4f0; --white: #111; --muted: #555; --faint: #888; --line: #ddd; --line-strong: #bbb; --gray-bar: #d5d5cf; --pos-text: #377073; --neg-text: #c2443f; }
   body::before, .no-print, .ctl, .export { display: none !important; }
   .mod-head { position: static; } .mod, .card, .ins article { break-inside: avoid; }
-  * { animation: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  * { animation: none !important; transition: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .rv > * { opacity: 1 !important; transform: none !important; } .rv .b, .rv .rr .m i { transform: none !important; } .rv .dtrack .ln { opacity: 1 !important; }
+  #load, .tip { display: none !important; }
 }
 </style>
 </head>
@@ -313,7 +359,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
     <button class="btn" type="button" data-theme-toggle>Tema</button>
   </div>
   <div class="start-mid">
-    <svg viewBox="0 0 936 621" role="img" aria-label="Revenue"><use href="#rv"/></svg>
+    <svg viewBox="0 0 936 621" role="img" aria-label="Revenue"><path class="lg-b" fill="currentColor" d="M0 436 256 318V621H0z"/><path class="lg-b" fill="currentColor" d="M340 276 596 158V621H340z"/><path class="lg-b" fill="currentColor" d="M680 118 936 0V621H680z"/><path class="lg-c" fill="url(#lgR)" d="M256 318 340 421V621L256 516z"/><path class="lg-c" fill="url(#lgT)" d="M596 158 680 256V616L596 513z"/></svg>
     <h1>Solte o relatório.</h1>
     <p>Vendas por canal e rota, comparadas entre períodos. O painel completo se monta sozinho a partir da planilha.</p>
     <button class="dz" id="dz" type="button"><b>Arraste o arquivo para cá ou clique para escolher</b><span>.xlsx · .xls · .csv — um ou vários arquivos</span></button>
@@ -348,7 +394,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
     </div>
   </header>
 
-  <section class="wrap hero" id="topo">
+  <section class="wrap hero rv" id="topo">
     <div>
       <p class="eyebrow" id="ctx"></p>
       <h1>Vendas por canal e rota<span id="per"></span></h1>
@@ -357,7 +403,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
   </section>
 
   <nav class="wrap bar no-print" aria-label="Módulos do painel">
-    <span class="lbl">Módulos</span>
+    <i id="prog"></i><span class="lbl">Módulos</span>
     <div class="chips" id="modChips"></div>
     <span class="sp"></span>
     <label class="cmp" id="cmp"><select class="sel" id="selB" aria-label="Período analisado"></select><span id="vs">×</span><select class="sel" id="selA" aria-label="Período de comparação"></select></label>
@@ -368,8 +414,8 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
       <p class="eyebrow">Resumo · <span id="kpiPer"></span></p>
       <div class="chips ctl" id="subs"></div>
     </div>
-    <div class="kpis" id="kpis"></div>
-    <div class="decomp" id="decomp">
+    <div class="kpis rv" id="kpis"></div>
+    <div class="decomp rv" id="decomp">
       <div><p class="eyebrow">De onde veio a variação</p><h3 id="dcTitle"></h3><p>Separa a variação de receita em quanto veio de vender mais bilhetes e quanto veio do preço médio de cada bilhete.</p></div>
       <div class="mod-body"><div class="div-chart" id="dcChart"></div><p class="src">Efeito volume = Δ bilhetes × ticket médio anterior. Efeito preço = Δ ticket médio × bilhetes atuais. A soma dos dois é a variação total.</p></div>
     </div>
@@ -377,7 +423,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 
   <main class="wrap" id="mods">
     <!-- CANAIS -->
-    <section class="mod" data-mod="canais" id="m-canais">
+    <section class="mod rv" data-mod="canais" id="m-canais">
       <div class="mod-head"><p class="eyebrow">Canais</p><h2>Quem puxou e quem perdeu</h2><p>Variação por canal entre os dois períodos. Destaque nos que mais mexeram no resultado; o resto fica em cinza como contexto.</p></div>
       <div class="mod-body">
         <div class="ctl">
@@ -396,7 +442,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
     </section>
 
     <!-- MIX -->
-    <section class="mod" data-mod="mix" id="m-mix">
+    <section class="mod rv" data-mod="mix" id="m-mix">
       <div class="mod-head"><p class="eyebrow">Mix de canais</p><h2>Quem ganhou espaço</h2><p>Participação de cada canal na receita. O círculo vazio é o período anterior, o cheio é o analisado.</p></div>
       <div class="mod-body">
         <p class="title-insight" id="mixTitle"></p>
@@ -407,7 +453,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
     </section>
 
     <!-- MÊS A MÊS -->
-    <section class="mod" data-mod="mes" id="m-mes">
+    <section class="mod rv" data-mod="mes" id="m-mes">
       <div class="mod-head"><p class="eyebrow">Mês a mês</p><h2>O ritmo de cada mês</h2><p>Variação de receita em cada mês, comparando o mesmo mês nos dois períodos.</p></div>
       <div class="mod-body">
         <div class="ctl cmp-only"><span class="lbl">Escala</span><div class="seg" data-s="mes.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ valor</button><button type="button" data-v="pct">Δ %</button></div></div>
@@ -418,7 +464,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
     </section>
 
     <!-- ROTAS -->
-    <section class="mod" data-mod="rotas" id="m-rotas">
+    <section class="mod rv" data-mod="rotas" id="m-rotas">
       <div class="mod-head"><p class="eyebrow">Rotas · todos os canais</p><h2>Onde a malha cresce e onde perde</h2><p>Cada rota por sentido. Em destaque, as maiores altas e as maiores quedas.</p></div>
       <div class="mod-body">
         <div class="ctl">
@@ -437,7 +483,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
     </section>
 
     <!-- ROTAS POR CANAL -->
-    <section class="mod" data-mod="rpc" id="m-rpc">
+    <section class="mod rv" data-mod="rpc" id="m-rpc">
       <div class="mod-head"><p class="eyebrow">Rotas por canal</p><h2>Onde cada canal ganhou e perdeu</h2><p>Principais altas e quedas de receita dentro de cada canal. A barra compara as rotas do mesmo canal.</p></div>
       <div class="mod-body">
         <div class="ctl">
@@ -452,7 +498,7 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
     </section>
 
     <!-- CONCLUSÕES -->
-    <section class="mod" data-mod="concl" id="m-concl">
+    <section class="mod rv" data-mod="concl" id="m-concl">
       <div class="mod-head"><p class="eyebrow">Para a reunião</p><h2>Pontos de atenção</h2><p>Leituras geradas automaticamente a partir dos números. Indicam onde olhar; a causa precisa de investigação.</p></div>
       <div class="mod-body"><div class="ins" id="ins"></div><ul class="notes" id="notes"></ul></div>
     </section>
@@ -469,6 +515,8 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 </dialog>
 <input type="file" id="pick" accept=".xlsx,.xls,.xlsm,.csv,.txt,.tsv" multiple hidden>
 <div class="veil" id="veil"><div>Solte para carregar</div></div>
+<div id="load"></div>
+<div class="tip" id="tip" role="tooltip"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -495,6 +543,18 @@ const fD = (v, k) => (v == null ? "–" : sg(v) + fV(Math.abs(v), k) + (k === "b
 const pct = (a, b) => (a > 0 ? (b - a) / a * 100 : null);
 const maxBy = (a, k) => a.reduce((x, y) => (x == null || y[k] > x[k] ? y : x), null);
 const minBy = (a, k) => a.reduce((x, y) => (x == null || y[k] < x[k] ? y : x), null);
+// el.html = "…" só toca no DOM quando o conteúdo mudou: o que não mudou não pisca nem reanima
+Object.defineProperty(Element.prototype, "html", { set(v) { if (this._h === v) return; this._h = v; this.innerHTML = v; } });
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const vt = fn => (document.startViewTransition && !calm ? document.startViewTransition(fn) : fn());
+// contagem suave de um número até o novo valor
+const prevNum = new Map();
+function countTo(el, key, to, fmt) {
+  const from = prevNum.get(key) ?? 0; prevNum.set(key, to); cancelAnimationFrame(el._raf);
+  if (calm || to == null || from === to) return;
+  const t0 = performance.now(), step = t => { const p = Math.min(1, (t - t0) / 900), e = 1 - Math.pow(1 - p, 4); el.innerHTML = fmt(from + (to - from) * e); if (p < 1) el._raf = requestAnimationFrame(step); };
+  el._raf = requestAnimationFrame(step);
+}
 let tT; const toast = (m, ms = 3200) => { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tT); tT = setTimeout(() => t.classList.remove("on"), ms); };
 
 const MONL = ["", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -648,6 +708,7 @@ const SEP = "\u0001";
 
 async function ingest(files) {
   let bad = null;
+  document.body.classList.add("busy"); await new Promise(r => setTimeout(r, 60)); // deixa o indicador de leitura aparecer
   for (const f of files) {
     try {
       const sheets = await readFile(f), found = [];
@@ -660,15 +721,17 @@ async function ingest(files) {
       else toast(`“${f.name}” parece vazio.`);
     } catch (e) { toast(e.message || `Não consegui ler “${f.name}”.`, 5000); }
   }
+  document.body.classList.remove("busy");
   rebuild();
+  if (!bad && D.recs.length) toast(`${nf0.format(D.recs.length)} registros carregados`, 2200);
   if (bad) openMap("Não reconheci as colunas de “" + bad.file + "” sozinho. Indique onde está cada informação.");
 }
 
 function rebuild() {
   D.recs = D.sources.filter(valid).flatMap(buildRecs);
-  const show = D.recs.length > 0;
-  $("#start").hidden = show; $("#app").hidden = !show;
-  if (!show) { if (D.sources.length && D.sources.every(valid)) toast("Nenhuma linha com valores encontrada."); return; }
+  const show = D.recs.length > 0, swap = $("#start").hidden !== show;
+  const flip = () => { $("#start").hidden = show; $("#app").hidden = !show; };
+  if (!show) { swap ? vt(flip) : flip(); if (D.sources.length && D.sources.every(valid)) toast("Nenhuma linha com valores encontrada."); return; }
   D.has = { canal: D.recs.some(r => r.canal), rota: D.recs.some(r => r.rota), rec: D.recs.some(r => r.rec), bil: D.recs.some(r => r.bil) };
   // como comparar: anos (com meses como recorte) › meses › rótulo/arquivo
   const ys = new Set(D.recs.map(r => r.y).filter(Boolean)), ms = new Set(D.recs.filter(r => r.m).map(r => (r.y || 0) * 12 + r.m));
@@ -685,7 +748,9 @@ function rebuild() {
   const m0 = D.has.rec ? "rec" : "bil";
   Object.assign(S.canal, dimState(), { met: m0 }); Object.assign(S.rota, dimState(), { met: m0 }); S.rpc.sel = null;
   $("#rQ").value = "";
-  render(); scrollTo({ top: 0 });
+  prevNum.clear();
+  const go = () => { flip(); render(); scrollTo({ top: 0, behavior: "instant" }); reveal(); };
+  swap ? vt(go) : go();
 }
 
 /* ==================================================================
@@ -729,19 +794,35 @@ const perLabel = () => (S.sub ? MONF[S.sub] + " · " : "") + (C.single ? S.B : `
    ================================================================== */
 // barras divergentes: rows = [{ n, v, label, hi, tone }]
 function divChart(el, rows) {
-  if (!rows.length) { el.innerHTML = '<p class="src">Nada para mostrar com esse filtro.</p>'; return; }
+  if (!rows.length) { el._rows = null; el.innerHTML = '<p class="src">Nada para mostrar com esse filtro.</p>'; return; }
+  if (!el._rows) { el.innerHTML = ""; el._rows = new Map(); }
   const lo = Math.min(0, ...rows.map(r => r.v)), hi = Math.max(0, ...rows.map(r => r.v)), span = hi - lo || 1, z = -lo / span * 100;
-  el.innerHTML = rows.map((r, i) => {
+  // as linhas são reaproveitadas pelo nome: as barras deslizam para o novo valor e as linhas trocam de lugar
+  const old = el._rows, next = new Map(), live = !!el.closest(".rv.in"), top0 = new Map();
+  for (const [k, n] of old) top0.set(k, n.getBoundingClientRect().top);
+  rows.forEach((r, i) => {
     const w = Math.abs(r.v) / span * 100, left = r.v >= 0 ? z : z - w, tone = r.tone || (r.v >= 0 ? "pos" : "neg");
-    return `<div class="drow${r.hi ? " hi" : ""}" style="--i:${Math.min(i, 30)}" title="${esc(r.tip || r.n)}"><span class="nm">${esc(r.n)}</span>
-      <span class="track"><span class="zero" style="left:${z}%"></span><span class="b ${tone}" style="left:${left}%;width:${Math.max(w, .4)}%"></span></span>
-      <span class="val ${r.hi && tone !== "neu" ? cls(r.v) : ""}">${r.label}</span></div>`;
-  }).join("");
+    let n = old.get(r.n); const fresh = !n;
+    if (fresh) { n = document.createElement("div"); n.innerHTML = '<span class="nm"></span><span class="track"><span class="zero"></span><span class="b"></span></span><span class="val"></span>'; n.firstChild.textContent = r.n; }
+    n.className = "drow" + (r.hi ? " hi" : "") + (fresh ? " enter" : ""); n.style.setProperty("--i", fresh ? Math.min(i, 30) : 0); n.dataset.tip = r.tip || r.n;
+    const b = n.querySelector(".b"), val = n.lastChild;
+    if (fresh || !live) n.querySelector(".zero").style.left = z + "%";
+    b.className = "b " + tone + (fresh && !live ? "" : " tw");
+    if (fresh) { b.style.left = (live ? z : left) + "%"; b.style.width = (live ? 0 : Math.max(w, .4)) + "%"; }
+    n._t = [left, Math.max(w, .4), z];
+    val.className = "val " + (r.hi && tone !== "neu" ? cls(r.v) : ""); val.innerHTML = r.label;
+    el.appendChild(n); next.set(r.n, n);
+  });
+  for (const [k, n] of old) if (!next.has(k)) n.remove();
+  el._rows = next;
+  for (const [k, n] of next) { const t = top0.get(k); if (t == null) continue; const dy = t - n.getBoundingClientRect().top; if (Math.abs(dy) > 1) { n.style.transition = "none"; n.style.transform = `translateY(${dy}px)`; } }
+  el.offsetHeight; // fixa as posições de partida antes de animar
+  for (const n of next.values()) { n.style.transition = ""; n.style.transform = ""; const b = n.querySelector(".b"); n.querySelector(".zero").style.left = n._t[2] + "%"; b.style.left = n._t[0] + "%"; b.style.width = n._t[1] + "%"; }
 }
 function table(el, cols, rows, st, foot) {
   const data = rows.slice();
   if (st.sort) { const c = cols.find(c => c.k === st.sort.k); if (c) data.sort((x, y) => { const u = c.sv(x), v = c.sv(y); return (typeof u === "string" ? u.localeCompare(v, "pt-BR") : (u ?? -Infinity) - (v ?? -Infinity)) * st.sort.dir; }); }
-  el.innerHTML = `<thead><tr>${cols.map(c => `<th scope="col" data-k="${c.k}"${st.sort && st.sort.k === c.k ? ` aria-sort="${st.sort.dir > 0 ? "ascending" : "descending"}"` : ""}>${esc(c.h)}</th>`).join("")}</tr></thead>
+  el.html = `<thead><tr>${cols.map(c => `<th scope="col" data-k="${c.k}"${st.sort && st.sort.k === c.k ? ` aria-sort="${st.sort.dir > 0 ? "ascending" : "descending"}"` : ""}>${esc(c.h)}</th>`).join("")}</tr></thead>
     <tbody>${data.map(r => `<tr>${cols.map(c => `<td class="${c.c ? c.c(r) : ""}">${c.f(r)}</td>`).join("")}</tr>`).join("")}</tbody>
     ${foot ? `<tfoot><tr>${cols.map(c => `<td class="${c.c ? c.c(foot) : ""}">${c.f(foot)}</td>`).join("")}</tr></tfoot>` : ""}`;
   el.onclick = e => { const th = e.target.closest("th"); if (!th) return; const k = th.dataset.k; st.sort = { k, dir: st.sort && st.sort.k === k ? -st.sort.dir : k === "n" ? 1 : -1 }; render(); };
@@ -786,11 +867,11 @@ function insight(dim, met) {
 function renderTop() {
   const T = C.T, s = C.single, R = L(T, "rec"), B = L(T, "bil"), M = L(T, "tm");
   const opt = sel => D.groups.map(g => `<option${g === sel ? " selected" : ""}>${esc(g)}</option>`).join("");
-  $("#selB").innerHTML = opt(S.B); $("#selA").innerHTML = opt(S.A);
+  $("#selB").html = opt(S.B); $("#selA").html = opt(S.A);
   $("#selA").hidden = $("#vs").hidden = s; $("#cmp").hidden = D.groups.length < 2;
   $("#ctx").textContent = "Revenue Management · " + D.sources.map(x => x.file.replace(/\.[^.]+$/, "")).join(" + ");
   $("#per").textContent = perLabel(); $("#kpiPer").textContent = perLabel();
-  $("#subs").innerHTML = D.subs.length > 1 ? `<button class="chip sm" type="button" data-m="" aria-pressed="${S.sub == null}">Todos os meses</button>` + D.subs.map(m => `<button class="chip sm" type="button" data-m="${m}" aria-pressed="${S.sub === m}">${MONF[m]}</button>`).join("") : "";
+  $("#subs").html = D.subs.length > 1 ? `<button class="chip sm" type="button" data-m="" aria-pressed="${S.sub == null}">Todos os meses</button>` + D.subs.map(m => `<button class="chip sm" type="button" data-m="${m}" aria-pressed="${S.sub === m}">${MONF[m]}</button>`).join("") : "";
 
   // parágrafo de abertura
   const main = D.has.rec ? R : B, mk = C.met0, ch = D.has.canal ? lines(C.canal, mk).filter(r => r.d != null) : [];
@@ -804,21 +885,23 @@ function renderTop() {
     if (dn.length) lead += `${top && top.d > 0 ? ";" : ""} ${dn.map(r => `<b>${esc(r.n)}</b>`).join(" e ")} ${dn.length > 1 ? "perderam" : "perdeu"} ${MET[mk].toLowerCase()}`;
     if ((top && top.d > 0) || dn.length) lead += ".";
   }
-  $("#lead").innerHTML = lead;
+  $("#lead").html = lead;
 
   // KPIs
-  const tile = (k, v, d) => `<div class="kpi"><p class="eyebrow">${k}</p><div class="v">${v}</div><div class="d">${d}</div></div>`;
+  const tile = (k, val, fmt, d) => ({ val, fmt, html: `<div class="kpi"><p class="eyebrow">${k}</p><div class="v">${fmt(val)}</div><div class="d">${d}</div></div>` });
   const big = (v, k) => (k === "bil" ? fInt(v) : `<small>R$</small>${fV(v, k).replace("R$ ", "")}`);
   const sub = (x, k) => (s ? esc(S.B) : x.p == null ? "sem base de comparação" : `<span class="pill ${cls(x.d)}">${fPct(x.p)}</span> ${fD(x.d, k)} · era ${fV(x.a, k)}`);
   const tiles = [];
-  if (D.has.rec) tiles.push(tile("Receita", big(R.b, "rec"), sub(R, "rec")));
-  if (D.has.bil) tiles.push(tile("Bilhetes", big(B.b, "bil"), sub(B, "bil")));
-  if (D.has.rec && D.has.bil) tiles.push(tile("Ticket médio", big(M.b, "tm"), sub(M, "tm")));
+  if (D.has.rec) tiles.push(tile("Receita", R.b, v => big(v, "rec"), sub(R, "rec")));
+  if (D.has.bil) tiles.push(tile("Bilhetes", B.b, v => big(v, "bil"), sub(B, "bil")));
+  if (D.has.rec && D.has.bil) tiles.push(tile("Ticket médio", M.b, v => big(v, "tm"), sub(M, "tm")));
   const dim = D.has.canal ? "canal" : "rota", all = lines(C[dim], mk);
-  if (s) { const top = maxBy(all, "b"); if (top && main.b) tiles.push(tile(`Maior ${dim}`, `${nf0.format(top.b / main.b * 100)}%`, `${esc(top.n)} · ${fV(top.b, mk)}`)); }
+  if (s) { const top = maxBy(all, "b"); if (top && main.b) tiles.push(tile(`Maior ${dim}`, top.b / main.b * 100, v => nf0.format(v) + "%", `${esc(top.n)} · ${fV(top.b, mk)}`)); }
   else { const top = main.d >= 0 ? maxBy(all.filter(r => r.d != null), "d") : minBy(all.filter(r => r.d != null), "d");
-    if (top && main.d) tiles.push(tile(`${esc(top.n)} ${main.d >= 0 ? "no crescimento" : "na queda"}`, `${nf0.format(top.d / main.d * 100)}%`, `<span class="pill ${cls(top.d)}">${fD(top.d, mk)}</span> de ${fD(main.d, mk)} líquidos`)); }
-  $("#kpis").innerHTML = tiles.join("");
+    if (top && main.d) tiles.push(tile(`${esc(top.n)} ${main.d >= 0 ? "no crescimento" : "na queda"}`, top.d / main.d * 100, v => nf0.format(v) + "%", `<span class="pill ${cls(top.d)}">${fD(top.d, mk)}</span> de ${fD(main.d, mk)} líquidos`)); }
+  const kEl = $("#kpis"), kHtml = tiles.map(t => t.html).join(""), kNew = kEl._h !== kHtml;
+  kEl.html = kHtml;
+  if (kNew) kEl.querySelectorAll(".v").forEach((el, i) => countTo(el, i, tiles[i].val, tiles[i].fmt));
 
   // decomposição volume × preço
   $("#decomp").hidden = !C.dec;
@@ -867,7 +950,7 @@ function renderDim(dim) {
         return `<li><b>${esc(r.n)}</b> ${bits.join("; ")}.</li>`; };
       const up = all.filter(r => r.d > 0).sort((x, y) => y.d - x.d), dn = all.filter(r => r.d < 0).sort((x, y) => x.d - y.d);
       const rest = (a, n) => (a.length > n ? `<li>Outros ${a.length - n}: ${fD(a.slice(n).reduce((x, r) => x + r.d, 0), "rec")} somados.</li>` : "");
-      box.innerHTML = `<div><h4 class="up">Cresceram</h4><ul>${up.slice(0, 4).map(li).join("") + rest(up, 4) || "<li>Nenhum canal cresceu.</li>"}</ul></div>
+      box.html = `<div><h4 class="up">Cresceram</h4><ul>${up.slice(0, 4).map(li).join("") + rest(up, 4) || "<li>Nenhum canal cresceu.</li>"}</ul></div>
         <div><h4 class="down">Caíram</h4><ul>${dn.slice(0, 4).map(li).join("") + rest(dn, 4) || "<li>Nenhum canal caiu.</li>"}</ul></div>`;
     }
   }
@@ -886,9 +969,9 @@ function renderMix() {
   const g = mixData(), max = Math.max(10, Math.ceil(Math.max(...g.flatMap(r => [r.a, r.b])) / 10) * 10), x = v => Math.max(0, Math.min(100, v / max * 100));
   const ticks = Array.from({ length: max / 10 + 1 }, (_, i) => i * 10).filter((t, i, a) => a.length <= 6 || i % 2 === 0);
   $("#mixA").textContent = S.A;
-  $("#mixChart").innerHTML = `<div class="dumb-axis"><span></span><span class="ticks">${ticks.map(t => `<span style="left:${x(t)}%">${t}%</span>`).join("")}</span><span></span></div>` +
-    g.map(r => { const d = r.b - r.a, k = Math.abs(d) < .3 ? "" : cls(d);
-      return `<div class="drow2 ${k}"><span class="nm" title="${esc(r.n)}">${esc(r.n)}</span><span class="dtrack"><span class="ln" style="left:${x(Math.min(r.a, r.b))}%;width:${x(Math.abs(d))}%"></span><span class="dot a" style="left:${x(r.a)}%"></span><span class="dot b" style="left:${x(r.b)}%"></span></span><span class="val"><b>${nf1.format(r.b)}%</b> <span class="${k}">(${fPP(d)})</span></span></div>`; }).join("");
+  $("#mixChart").html = `<div class="dumb-axis"><span></span><span class="ticks">${ticks.map(t => `<span style="left:${x(t)}%">${t}%</span>`).join("")}</span><span></span></div>` +
+    g.map((r, i) => { const d = r.b - r.a, k = Math.abs(d) < .3 ? "" : cls(d);
+      return `<div class="drow2 ${k}" style="--i:${i};--from:${x(r.a)}%"><span class="nm" title="${esc(r.n)}">${esc(r.n)}</span><span class="dtrack"><span class="ln" style="left:${x(Math.min(r.a, r.b))}%;width:${x(Math.abs(d))}%"></span><span class="dot a" style="left:${x(r.a)}%"></span><span class="dot b" style="left:${x(r.b)}%"></span></span><span class="val"><b>${nf1.format(r.b)}%</b> <span class="${k}">(${fPP(d)})</span></span></div>`; }).join("");
   const v = g.filter(r => !r.others), up = maxBy(v.map(r => ({ ...r, d: r.b - r.a })), "d"), dn = minBy(v.map(r => ({ ...r, d: r.b - r.a })), "d"), f = r => `${nf1.format(r.a)}% para ${nf1.format(r.b)}%`;
   $("#mixTitle").textContent = [up && up.d > .3 && `${up.n} foi de ${f(up)} da ${MET[C.met0].toLowerCase()}`, dn && dn.d < -.3 && `${dn.n} caiu de ${f(dn)}`].filter(Boolean).join("; ") || "O mix de canais ficou praticamente estável";
   const oth = g.find(r => r.others);
@@ -903,7 +986,7 @@ function renderMes() {
   const tot = { n: "Total", p: C.months.map(mo => ({ m: mo.m, ...L(mo.t, k) })) };
   const vals = [tot, ...names].flatMap(r => r.p.map(x => x[idx]).filter(v => v != null));
   const lo = Math.min(0, ...vals), hi = Math.max(0, ...vals), span = hi - lo || 1, z = -lo / span * 100;
-  $("#mChart").innerHTML = [tot, ...names].map(r => `<div class="mrow"><span class="nm" title="${esc(r.n)}"${r === tot ? ' style="color:var(--white);font-weight:600"' : ""}>${esc(r.n)}</span><div class="mbars">${r.p.map(x => {
+  $("#mChart").html = [tot, ...names].map((r, i) => `<div class="mrow" style="--i:${i}"><span class="nm" title="${esc(r.n)}"${r === tot ? ' style="color:var(--white);font-weight:600"' : ""}>${esc(r.n)}</span><div class="mbars">${r.p.map(x => {
     const v = x[idx];
     if (v == null) return `<div class="mbar"><span class="k">${MONL[x.m]}</span><span class="track"><span class="zero" style="left:${z}%"></span></span><span class="src">sem base</span></div>`;
     const w = Math.abs(v) / span * 100, left = v >= 0 ? z : z - w;
@@ -922,10 +1005,10 @@ function crRows(canal) { const out = []; for (const [k, o] of C.cr) { const [c, 
 function renderRPC() {
   const k = C.met0, s = C.single, all = lines(C.canal, k).sort((x, y) => y.b - x.b).map(r => r.n), def = all.slice(0, 8);
   const sel = S.rpc.sel ? S.rpc.sel.filter(n => all.includes(n)) : def, isAll = !S.rpc.sel;
-  $("#rpcChips").innerHTML = `<button type="button" class="chip sm" data-k="" aria-pressed="${isAll}">${all.length > 8 ? "Principais" : "Todos"}</button>` + all.map(n => `<button type="button" class="chip sm" data-k="${esc(n)}" aria-pressed="${!isAll && sel.includes(n)}">${esc(n)}</button>`).join("");
+  $("#rpcChips").html = `<button type="button" class="chip sm" data-k="" aria-pressed="${isAll}">${all.length > 8 ? "Principais" : "Todos"}</button>` + all.map(n => `<button type="button" class="chip sm" data-k="${esc(n)}" aria-pressed="${!isAll && sel.includes(n)}">${esc(n)}</button>`).join("");
   $("#rpcN").value = String(S.rpc.n);
   const N = +S.rpc.n;
-  $("#rpcCards").innerHTML = sel.map(c => {
+  $("#rpcCards").html = sel.map((c, ci) => {
     const rows = crRows(c), ch = L(C.canal.get(c), k);
     const ups = s ? rows.sort((x, y) => y.b - x.b).slice(0, N * 2) : rows.filter(r => r.d > 0).sort((x, y) => y.d - x.d).slice(0, N);
     const dns = s ? [] : rows.filter(r => r.d < 0).sort((x, y) => x.d - y.d).slice(0, N);
@@ -934,7 +1017,7 @@ function renderRPC() {
       return `<div class="rr"><div class="t"><span>${esc(r.n)}</span><b class="${s ? "" : cls(r.d)}">${s ? fV(r.b, k) : fD(r.d, k)}</b></div>
       <div class="m"><i style="width:${Math.abs(v) / mx * 100}%;background:var(--${col})"></i></div>
       <div class="x"><span>${s ? (D.has.bil && k === "rec" ? fInt(b.b) + " bilhetes" : "") : `${fV(r.a, k)} → ${fV(r.b, k)}${D.has.bil && k === "rec" ? ` · bilhetes ${fInt(b.a)} → ${fInt(b.b)}` : ""}`}</span><span class="${s ? "" : cls(r.d)}">${s ? (ch.b ? nf1.format(r.b / ch.b * 100) + "% do canal" : "") : r.p == null ? "nova" : r.b === 0 ? "sem vendas" : fPct(r.p)}</span></div></div>`; };
-    return `<article class="card"><div class="card-h"><h3>${esc(c)}</h3><span class="${s ? "" : cls(ch.d)}">${s ? fV(ch.b, k) : `${fD(ch.d, k)} · ${fPct(ch.p)} no canal`}</span></div>
+    return `<article class="card" style="--i:${ci}"><div class="card-h"><h3>${esc(c)}</h3><span class="${s ? "" : cls(ch.d)}">${s ? fV(ch.b, k) : `${fD(ch.d, k)} · ${fPct(ch.p)} no canal`}</span></div>
       <div class="cols${s ? " one" : ""}"><div class="col"><h4 class="${s ? "" : "up"}">${s ? "Maiores rotas" : "Maiores altas"}</h4>${ups.length ? ups.map(r => li(r, s ? "white" : "teal")).join("") : `<p class="none">Nenhuma alta: ${rows.length} rotas caíram ou ficaram estáveis.</p>`}</div>
       ${s ? "" : `<div class="col"><h4 class="down">Maiores quedas</h4>${dns.length ? dns.map(r => li(r, "red")).join("") : `<p class="none">Nenhuma queda: as ${rows.length} rotas do canal cresceram ou ficaram estáveis.</p>`}</div>`}</div></article>`;
   }).join("");
@@ -945,10 +1028,10 @@ function renderRPC() {
   const list = [...routes].map(([n, m]) => ({ n, m, s: Object.values(m).reduce((a, b) => a + b, 0), w: Object.values(m).reduce((a, b) => a + Math.abs(b), 0) })).sort((x, y) => y.w - x.w).slice(0, 16).sort((x, y) => y.s - x.s);
   const hmax = Math.max(1, ...list.flatMap(r => Object.values(r.m).map(Math.abs))), light = document.documentElement.dataset.mode === "light";
   const short = v => { const a = Math.abs(v); return (s ? "" : sg(v)) + (k === "bil" ? nf0.format(a) : a >= 1e6 ? nf1.format(a / 1e6) + "M" : a >= 1000 ? nf1.format(a / 1000) + "k" : nf0.format(a)); };
-  $("#heat").innerHTML = `<thead><tr><th></th>${def.map(c => `<th class="eyebrow">${esc(c)}</th>`).join("")}<th class="eyebrow" style="text-align:right">Soma</th></tr></thead><tbody>` +
+  $("#heat").html = `<thead><tr><th></th>${def.map(c => `<th class="eyebrow">${esc(c)}</th>`).join("")}<th class="eyebrow" style="text-align:right">Soma</th></tr></thead><tbody>` +
     list.map(r => `<tr><td class="r">${esc(r.n)}</td>${def.map(c => { const v = r.m[c]; if (v == null) return `<td class="c">·</td>`;
       const al = (.14 + .76 * Math.sqrt(Math.abs(v) / hmax)) * (light ? .85 : 1), rgb = s ? "143,143,139" : v > 0 ? "79,158,161" : "236,90,85";
-      return `<td class="c v" style="background:rgba(${rgb},${al.toFixed(2)})" title="${esc(c)} · ${esc(r.n)}: ${s ? fV(v, k) : fD(v, k)}">${short(v)}</td>`; }).join("")}<td class="tot ${s ? "" : cls(r.s)}">${s ? fV(r.s, k) : fD(r.s, k)}</td></tr>`).join("") + "</tbody>";
+      return `<td class="c v" style="background:rgba(${rgb},${al.toFixed(2)})" data-tip="${esc(c)} · ${esc(r.n)}: ${s ? fV(v, k) : fD(v, k)}">${short(v)}</td>`; }).join("")}<td class="tot ${s ? "" : cls(r.s)}">${s ? fV(r.s, k) : fD(r.s, k)}</td></tr>`).join("") + "</tbody>";
   const mg = migration();
   $("#heatTitle").textContent = mg ? `${mg.n}: ${mg.up} ganha ${fV(mg.g, k)} enquanto ${mg.dn} perde ${fV(Math.abs(mg.l), k)}` : s ? `Receita por rota e canal em ${S.B}` : "Onde cada canal mexeu em cada rota";
 }
@@ -963,7 +1046,7 @@ function migration() {
 }
 
 function renderConcl() {
-  const k = C.met0, T = L(C.T, k), cards = [], notes = [], card = (tag, h, p) => cards.push(`<article><span class="tag" style="background:var(--${tag})"></span><h3>${esc(h)}</h3><p>${p}</p></article>`);
+  const k = C.met0, T = L(C.T, k), cards = [], notes = [], card = (tag, h, p) => cards.push(`<article style="--i:${cards.length}"><span class="tag" style="background:var(--${tag})"></span><h3>${esc(h)}</h3><p>${p}</p></article>`);
   const tA = C.T.a[k], tB = C.T.b[k];
   if (D.has.canal && tA && tB) {
     const sh = lines(C.canal, k).map(r => ({ n: r.n, a: r.a / tA * 100, b: r.b / tB * 100 })), top = maxBy(sh, "b");
@@ -1001,7 +1084,7 @@ function renderConcl() {
     if (gone.length) notes.push(`<b>Sem vendas em ${esc(S.B)}:</b> ${gone.map(esc).join(", ")}.`);
     if (born.length) notes.push(`<b>Sem vendas em ${esc(S.A)}:</b> ${born.map(esc).join(", ")}; não há Δ % para ${born.length > 1 ? "esses canais" : "esse canal"}.`);
   }
-  $("#ins").innerHTML = cards.join(""); $("#notes").innerHTML = notes.map(n => `<li>${n}</li>`).join(""); $("#notes").hidden = !notes.length;
+  $("#ins").html = cards.join(""); $("#notes").html = notes.map(n => `<li>${n}</li>`).join(""); $("#notes").hidden = !notes.length;
 }
 
 function render() {
@@ -1010,7 +1093,7 @@ function render() {
   document.querySelectorAll(".cmp-only").forEach(e => (e.hidden = C.single));
   renderTop();
   const on = MODS.filter(([k]) => avail(k));
-  $("#modChips").innerHTML = on.map(([k, n]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${!S.hide.includes(k)}">${n}</button>`).join("");
+  $("#modChips").html = on.map(([k, n]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${!S.hide.includes(k)}">${n}</button>`).join("");
   document.querySelectorAll(".mod").forEach(m => (m.hidden = !avail(m.dataset.mod) || S.hide.includes(m.dataset.mod)));
   const vis = k => avail(k) && !S.hide.includes(k);
   if (vis("canais")) renderDim("canal");
@@ -1020,7 +1103,8 @@ function render() {
   if (vis("rpc")) renderRPC();
   if (vis("concl")) renderConcl();
   document.querySelectorAll(".seg[data-s]").forEach(seg => { const [a, b] = seg.dataset.s.split("."); seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === S[a][b])); });
-  $("#files").innerHTML = D.sources.map((s, i) => `<div class="file"><span title="${esc(s.file)}">${esc(s.file)}${s.sheet && s.name === s.sheet ? " · " + esc(s.sheet) : ""}</span><small>${valid(s) ? nf0.format(s.rows.length) + " linhas" : "colunas?"}</small><button type="button" data-rm="${i}" aria-label="Remover">×</button></div>`).join("");
+  $("#files").html = D.sources.map((s, i) => `<div class="file"><span title="${esc(s.file)}">${esc(s.file)}${s.sheet && s.name === s.sheet ? " · " + esc(s.sheet) : ""}</span><small>${valid(s) ? nf0.format(s.rows.length) + " linhas" : "colunas?"}</small><button type="button" data-rm="${i}" aria-label="Remover">×</button></div>`).join("");
+  thumbs();
   $("#foot").textContent = `${nf0.format(D.recs.length)} registros · ${D.sources.length} ${D.sources.length > 1 ? "fontes" : "fonte"} · processado no navegador`;
 }
 
@@ -1039,7 +1123,7 @@ addEventListener("drop", e => { e.preventDefault(); dragN = 0; $("#veil").classL
 document.addEventListener("click", e => {
   const sb = e.target.closest(".seg[data-s] button");
   if (sb) { const [a, b] = sb.parentElement.dataset.s.split("."); S[a][b] = sb.dataset.v; if (b === "met") S[a].sort = null; return render(); }
-  if (e.target.closest("[data-theme-toggle]")) { const r = document.documentElement; r.dataset.mode = r.dataset.mode === "light" ? "dark" : "light"; try { localStorage.setItem("revenue-mode", r.dataset.mode); } catch (x) {} if (D.recs.length) render(); return; }
+  if (e.target.closest("[data-theme-toggle]")) { const r = document.documentElement; vt(() => { r.dataset.mode = r.dataset.mode === "light" ? "dark" : "light"; try { localStorage.setItem("revenue-mode", r.dataset.mode); } catch (x) {} if (D.recs.length) render(); }); return; }
   const m = $("#menu"); if (m.open && !m.contains(e.target)) m.open = false;
 });
 try { document.documentElement.dataset.mode = localStorage.getItem("revenue-mode") || "dark"; } catch (x) { document.documentElement.dataset.mode = "dark"; }
@@ -1064,11 +1148,32 @@ $("#menu").addEventListener("click", e => {
   if (act === "reset") { D.sources = []; rebuild(); }
 });
 
+/* ---------- movimento: revelar ao rolar, seletor deslizante, dica flutuante, progresso ---------- */
+const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .06, rootMargin: "0px 0px -6% 0px" }) : null;
+function reveal() { document.querySelectorAll(".rv").forEach(e => { e.classList.remove("in"); if (io) { io.unobserve(e); io.observe(e); } else e.classList.add("in"); }); }
+function thumbs() {
+  document.querySelectorAll(".seg").forEach(seg => {
+    const b = seg.querySelector('button[aria-pressed="true"]:not([hidden])'); let t = seg.querySelector(".thumb");
+    if (!b || !b.offsetWidth) return seg.classList.remove("th");
+    if (!t) { t = document.createElement("i"); t.className = "thumb"; t.style.transition = "none"; seg.prepend(t); requestAnimationFrame(() => (t.style.transition = "")); }
+    t.style.width = b.offsetWidth + "px"; t.style.transform = `translateX(${b.offsetLeft}px)`; seg.classList.add("th");
+  });
+}
+addEventListener("resize", thumbs); document.fonts?.ready.then(thumbs);
+const tip = $("#tip"); let tipEl = null;
+const tipOff = () => { if (tipEl) { tip.classList.remove("on"); tipEl = null; } };
+addEventListener("mousemove", e => {
+  const t = e.target.closest?.("[data-tip]"); if (!t) return tipOff();
+  if (t !== tipEl) { tipEl = t; tip.textContent = t.dataset.tip; tip.classList.add("on"); }
+  tip.style.left = Math.max(8, Math.min(innerWidth - tip.offsetWidth - 8, e.clientX + 14)) + "px"; tip.style.top = Math.min(innerHeight - 40, e.clientY + 18) + "px";
+});
+addEventListener("scroll", () => { tipOff(); const h = document.documentElement.scrollHeight - innerHeight; $("#prog").style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`; }, { passive: true });
+
 /* ---------- ajuste manual de colunas ---------- */
 function openMap(msg) {
   const src = D.sources.find(s => !valid(s)) || D.sources[0]; if (!src) return;
   if (msg) $("#mapMsg").textContent = msg;
-  $("#mapGrid").innerHTML = ROLES.map(([k, l]) => `<label for="mp-${k}">${l}</label><select id="mp-${k}" data-k="${k}"><option value="">—</option>${src.headers.map((h, i) => (h ? `<option value="${i}"${src.map[k] === i ? " selected" : ""}>${esc(h)}</option>` : "")).join("")}</select>`).join("");
+  $("#mapGrid").html = ROLES.map(([k, l]) => `<label for="mp-${k}">${l}</label><select id="mp-${k}" data-k="${k}"><option value="">—</option>${src.headers.map((h, i) => (h ? `<option value="${i}"${src.map[k] === i ? " selected" : ""}>${esc(h)}</option>` : "")).join("")}</select>`).join("");
   $("#mapDlg").showModal();
   $("#mapOk").onclick = () => {
     const byName = {};
@@ -1152,7 +1257,7 @@ async function buildPPTX() {
 async function busy(btn, fn) { btn.disabled = true; try { await fn(); } catch (e) { console.error(e); toast("Não consegui gerar o arquivo."); } btn.disabled = false; }
 $("#xls").onclick = e => busy(e.currentTarget, buildXLSX);
 $("#ppt").onclick = e => busy(e.currentTarget, buildPPTX);
-$("#pdf").onclick = () => { toast("Na janela de impressão, escolha “Salvar como PDF”."); setTimeout(() => print(), 350); };
+$("#pdf").onclick = () => { document.querySelectorAll(".rv").forEach(e => e.classList.add("in")); toast("Na janela de impressão, escolha “Salvar como PDF”."); setTimeout(() => print(), 350); };
 
 /* ---------- exemplo (fictício) e modelo ---------- */
 const HEAD = ["Canal", "Rota", "Ano", "Mês", "Receita", "Bilhetes"];

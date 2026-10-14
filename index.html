@@ -296,7 +296,8 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 .pop .it.ck { display: flex; align-items: center; gap: 10px; }
 .pop .it.ck::before { content: ""; width: 14px; height: 14px; flex: none; border: 1px solid var(--line-strong); border-radius: 4px; transition: background .2s, border-color .2s, box-shadow .2s; }
 .pop .it.ck[aria-checked="true"]::before { background: var(--white); border-color: var(--white); box-shadow: inset 0 0 0 3px var(--panel); }
-.pop .it.ck span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.pop .it.ck > span:not(.lg) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.pop .it.ck .lg { margin: 0; }
 .fq { width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--line); padding: 8px 10px; font-size: 13px; outline: 0; margin-bottom: 4px; }
 .fq::placeholder { color: var(--faint); }
 .map .dd { display: block; }
@@ -1152,7 +1153,7 @@ function crRows(canal) { const out = []; for (const [k, o] of C.cr) { const [c, 
 function renderRPC() {
   const k = C.k, s = C.single, all = lines(C.canal, C.ka).sort((x, y) => y.b - x.b).map(r => r.n), def = all.slice(0, 8);
   const sel = S.rpc.sel ? S.rpc.sel.filter(n => all.includes(n)) : def, isAll = !S.rpc.sel;
-  $("#rpcChips").html = `<button type="button" class="chip sm" data-k="" aria-pressed="${isAll}">${all.length > 8 ? "Principais" : "Todos"}</button>` + all.map(n => `<button type="button" class="chip sm" data-k="${esc(n)}" aria-pressed="${!isAll && sel.includes(n)}">${esc(n)}</button>`).join("");
+  $("#rpcChips").html = `<button type="button" class="chip sm" data-k="" aria-pressed="${isAll}">${all.length > 8 ? "Principais" : "Todos"}</button>` + all.map(n => `<button type="button" class="chip sm" data-k="${esc(n)}" aria-pressed="${!isAll && sel.includes(n)}">${lg(n, "sm")}${esc(n)}</button>`).join("");
   dd($("#rpcN"), [3, 4, 5, 8].map(n => ({ v: n, l: String(n) })), S.rpc.n, v => { S.rpc.n = v; render(); });
   const N = +S.rpc.n;
   $("#rpcCards").html = sel.map((c, ci) => {

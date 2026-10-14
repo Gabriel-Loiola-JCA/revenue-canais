@@ -550,10 +550,10 @@ body.busy .dz { opacity: .5; pointer-events: none; }
 
     <!-- ROTAS -->
     <section class="mod rv" data-mod="rotas" id="m-rotas">
-      <div class="mod-head"><p class="eyebrow">Rotas · todos os canais</p><h2>Onde a malha cresce e onde perde</h2><p>Por rota (cada sentido), por origem ou por destino. Clique numa barra para filtrar o painel.</p></div>
+      <div class="mod-head"><p class="eyebrow">Rotas · todos os canais</p><h2>Onde a malha cresce e onde perde</h2><p>Por rota (cada sentido), por origem, por destino ou por mercado. Clique numa barra para filtrar o painel.</p></div>
       <div class="mod-body">
         <div class="ctl">
-          <div class="seg" data-s="rota.by" role="group" aria-label="Agrupar por"><button type="button" data-v="rota">Rota</button><button type="button" data-v="org">Origem</button><button type="button" data-v="dst">Destino</button></div>
+          <div class="seg" data-s="rota.by" role="group" aria-label="Agrupar por"><button type="button" data-v="rota">Rota</button><button type="button" data-v="org">Origem</button><button type="button" data-v="dst">Destino</button><button type="button" data-v="mercado">Mercado</button></div>
           <div class="seg cmp-only" data-s="rota.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ absoluto</button><button type="button" data-v="val">Valor</button><button type="button" data-v="pct">Δ %</button></div>
           <div class="seg cmp-only" data-s="rota.dir" role="group" aria-label="Direção"><button type="button" data-v="all">Todas</button><button type="button" data-v="up">Cresceram</button><button type="button" data-v="down">Caíram</button></div>
           <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="rQ" type="search" placeholder="Filtrar cidade…" autocomplete="off" aria-label="Filtrar rotas por cidade"></label>
@@ -584,7 +584,7 @@ body.busy .dz { opacity: .5; pointer-events: none; }
 
     <!-- COMPARAR -->
     <section class="mod rv" data-mod="cmp" id="m-cmp">
-      <div class="mod-head"><p class="eyebrow">Comparar</p><h2>Lado a lado</h2><p>Escolha canais, rotas, origens ou destinos e compare receita, bilhetes, ticket médio e participação. A barra grossa é o período analisado; a fina, o anterior.</p></div>
+      <div class="mod-head"><p class="eyebrow">Comparar</p><h2>Lado a lado</h2><p>Escolha canais, mercados, rotas, origens ou destinos e compare receita, bilhetes, ticket médio e participação. A barra grossa é o período analisado; a fina, o anterior.</p></div>
       <div class="mod-body">
         <div class="ctl"><span class="lbl">Comparar</span><div class="seg" data-s="cmp.by" id="cmpBy" role="group" aria-label="Dimensão"></div></div>
         <div class="ctl"><div class="chips" id="cmpChips"></div><div id="cmpMore"></div></div>
@@ -703,13 +703,14 @@ const RX = {
   canal: /\b(canal|canais|channel|pdv)\b/, origem: /\b(origem|origin)\b/, destino: /\b(destino|destination)\b/,
   rota: /\b(rota|rotas|trecho|trechos|linha|route|secao)\b/,
   bil: /\b(bilhetes?|passagens?|passageiros?|pax|qtd|qtde|quantidade|tickets?|assentos?)\b/,
-  rec: /\b(receita|valor|faturamento|revenue|vendas?|tarifa|montante)\b|r\$/,
+  rec: /\b(receita|realizado|faturado|valor|vlr|faturamento|revenue|vendas?|tarifa|montante)\b|r\$/,
+  mercado: /\b(mercados?|market|regiao)\b/,
 };
-const ROLES = [["canal", "Canal"], ["rota", "Rota"], ["origem", "Origem"], ["destino", "Destino"], ["data", "Data"], ["ano", "Ano"], ["mes", "Mês / período"], ["rec", "Receita"], ["bil", "Bilhetes"]];
+const ROLES = [["canal", "Canal"], ["mercado", "Mercado"], ["rota", "Rota"], ["origem", "Origem"], ["destino", "Destino"], ["data", "Data"], ["ano", "Ano"], ["mes", "Mês / período"], ["rec", "Receita"], ["bil", "Bilhetes"]];
 const ANYRX = new RegExp(Object.values(RX).map(r => r.source).join("|"));
-const STRONG = /\b(receita|valor|faturamento|revenue|bilhetes?|passagens?|passageiros?|pax|qtd|qtde|quantidade)\b/;
+const STRONG = /\b(receita|realizado|faturado|vlr|valor|faturamento|revenue|bilhetes?|passagens?|passageiros?|pax|qtd|qtde|quantidade)\b/;
 const DERIV = /\b(medi[oa]|tm|var|variacao|delta|part|participacao|share|dif|diferenca|crescimento)\b/;
-const MEASW = /\b(receita|valor|faturamento|revenue|vendas?|tarifa|montante|bilhetes?|passagens?|passageiros?|pax|qtd|qtde|quantidade|tickets?|assentos?|total|de|em|r\$)\b/g;
+const MEASW = /\b(receita|realizado|faturado|vlr|valor|faturamento|revenue|vendas?|tarifa|montante|bilhetes?|passagens?|passageiros?|pax|qtd|qtde|quantidade|tickets?|assentos?|total|de|em|r\$)\b/g;
 const TOTRX = /\btotal\b|^soma\b|^todos\b/;
 
 // acha a linha de cabeçalho e o papel de cada coluna
@@ -730,7 +731,7 @@ function detect(aoa) {
   const map = {}, wide = [];
   headers.forEach((h, i) => {
     const n = norm(h); if (!n || DERIV.test(n) || /[%Δ]/.test(h)) return;
-    if (!STRONG.test(n)) for (const k of ["data", "ano", "mes", "canal", "origem", "destino", "rota"]) if (RX[k].test(n)) { if (map[k] == null) map[k] = i; return; }
+    if (!STRONG.test(n)) for (const k of ["data", "ano", "mes", "canal", "mercado", "origem", "destino", "rota"]) if (RX[k].test(n)) { if (map[k] == null) map[k] = i; return; }
     const role = RX.bil.test(n) ? "bil" : RX.rec.test(n) ? "rec" : null; if (!role) return;
     const q = parsePeriod(n.replace(MEASW, " ").trim(), "hdr");
     if (q && (q.y || q.m)) wide.push({ idx: i, role, y: q.y, m: q.m, p: [q.m ? MONL[q.m] : "", q.y || ""].join(" ").trim() });
@@ -740,28 +741,36 @@ function detect(aoa) {
   if (!isWide) for (const w of wide) if (map[w.role] == null) map[w.role] = w.idx;
   return { headers, rows: aoa.slice(best + 1), map, wide: isWide ? wide : [] };
 }
-const valid = s => (s.map.canal != null || s.map.rota != null || (s.map.origem != null && s.map.destino != null)) && (s.wide.length || s.map.rec != null || s.map.bil != null);
+const valid = s => (s.map.canal != null || s.map.rota != null || s.map.mercado != null || (s.map.origem != null && s.map.destino != null)) && (s.wide.length || s.map.rec != null || s.map.bil != null);
 
+const KEEP = new Set(["ABC", "J3", "KM", "RJ", "SP", "SC", "PR", "RS", "MG", "ES", "BA", "GO", "DF", "MS", "MT"]);
+const LOW = new Set(["de", "do", "da", "dos", "das", "e", "a", "o", "em"]);
+function pretty(v) {
+  if (!v || /[a-zà-ÿ]/.test(v)) return v; // só mexe no que está todo em maiúsculas
+  let first = true;
+  return v.replace(/[A-ZÀ-Ý0-9]+/g, w => { const lw = w.toLowerCase(), out = KEEP.has(w) || w.length <= 2 && !LOW.has(lw) ? w : !first && LOW.has(lw) ? lw : w[0] + lw.slice(1); first = false; return out; });
+}
+const place = v => v && pretty(v.replace(/\s*\(rodovi[aá]ria\)\s*/i, " ").replace(/\s{2,}/g, " ").trim());
 function buildRecs(src) {
   const { rows, map: M, wide, name } = src, out = []; let lastCanal = null, row;
   const txt = i => { const v = i == null ? null : row[i]; return v == null ? null : (v instanceof Date ? v.toLocaleDateString("pt-BR") : String(v).trim()) || null; };
   for (row of rows) {
     if (!row) continue;
-    let canal = txt(M.canal), rota = txt(M.rota);
-    const o = txt(M.origem), d = txt(M.destino);
+    let canal = pretty(txt(M.canal)), rota = txt(M.rota), mercado = pretty(txt(M.mercado));
+    const o = place(txt(M.origem)), d = place(txt(M.destino));
     if (!rota && o && d) rota = o + " › " + d;
     if (canal) lastCanal = canal; else if (M.canal != null && rota) canal = lastCanal; // células mescladas
     if (!canal && !rota) continue;
     if (TOTRX.test(norm(canal)) || TOTRX.test(norm(rota))) continue;
     if (wide.length) {
-      for (const w of wide) { const v = num(row[w.idx]); if (v != null) out.push({ canal, rota, y: w.y, m: w.m, p: w.p, rec: w.role === "rec" ? v : 0, bil: w.role === "bil" ? v : 0 }); }
+      for (const w of wide) { const v = num(row[w.idx]); if (v != null) out.push({ canal, rota, mercado, org: o, dst: d, y: w.y, m: w.m, p: w.p, rec: w.role === "rec" ? v : 0, bil: w.role === "bil" ? v : 0 }); }
       continue;
     }
     const rec = num(row[M.rec]), bil = num(row[M.bil]);
     if (rec == null && bil == null) continue;
     let y = null, m = null, p = null;
     for (const k of ["data", "ano", "mes"]) if (M[k] != null) { const q = parsePeriod(row[M[k]], k); if (q) { y = y ?? q.y; m = m ?? q.m; p = q.p; } }
-    out.push({ canal, rota, y, m, p: p ?? name, rec: rec || 0, bil: bil || 0 });
+    out.push({ canal, rota, mercado, org: o, dst: d, y, m, p: p ?? name, rec: rec || 0, bil: bil || 0 });
   }
   return out;
 }
@@ -798,9 +807,9 @@ async function readFile(file) {
 const D = { sources: [], recs: [], groups: [], subs: [], has: {} };
 const dimState = () => ({ esc: "abs", dir: "all", q: "", sort: null, all: false });
 const S = { A: null, B: null, hide: [], g: { met: "rec" }, canal: dimState(), rota: { ...dimState(), by: "rota" }, mes: { esc: "abs" }, rpc: { sel: null, n: 4 }, cmp: { by: "canal", sel: {} },
-  f: { canal: new Set(), org: new Set(), dst: new Set(), rota: new Set(), s: new Set() } }; // filtros: campo do registro → valores escolhidos
-const FDEF = [["canal", "Canal"], ["org", "Origem"], ["dst", "Destino"], ["rota", "Rota"], ["s", "Mês"]];
-const DIMN = { canal: ["canal", "canais", "Canal"], rota: ["rota", "rotas", "Rota"], org: ["origem", "origens", "Origem"], dst: ["destino", "destinos", "Destino"] };
+  f: { canal: new Set(), mercado: new Set(), org: new Set(), dst: new Set(), rota: new Set(), s: new Set() } }; // filtros: campo do registro → valores escolhidos
+const FDEF = [["canal", "Canal"], ["mercado", "Mercado"], ["org", "Origem"], ["dst", "Destino"], ["rota", "Rota"], ["s", "Mês"]];
+const DIMN = { canal: ["canal", "canais", "Canal"], mercado: ["mercado", "mercados", "Mercado"], rota: ["rota", "rotas", "Rota"], org: ["origem", "origens", "Origem"], dst: ["destino", "destinos", "Destino"] };
 const SPLIT = /\s*(?:›|→|->|–|—|\s-\s|\sx\s|\/)\s*/i;
 const CHEV = '<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 3.5 5 7l3.5-3.5"/></svg>';
 let C = {}; // agregados do recorte atual
@@ -848,7 +857,8 @@ function rebuild() {
   D.subs = [...new Set(D.recs.map(r => r.s).filter(Boolean))].sort((a, b) => a - b);
   S.B = D.groups.at(-1); S.A = D.groups.length > 1 ? D.groups.at(-2) : null;
   // origem e destino saem do nome da rota; opções de filtro ordenadas pelo tamanho
-  for (const r of D.recs) { const c = r.rota ? r.rota.split(SPLIT).map(x => x.trim()).filter(Boolean) : []; r.org = c.length >= 2 ? c[0] : null; r.dst = c.length >= 2 ? c.at(-1) : null; }
+  for (const r of D.recs) { if (r.org || r.dst || !r.rota) continue; const c = r.rota.split(SPLIT).map(x => x.trim()).filter(Boolean); r.org = c.length >= 2 ? c[0] : null; r.dst = c.length >= 2 ? c.at(-1) : null; }
+  D.od = new Map(); for (const r of D.recs) if (r.rota && r.org && r.dst && !D.od.has(r.rota)) D.od.set(r.rota, [r.org, r.dst]);
   D.opts = {};
   for (const [k] of FDEF) { const w = new Map(); for (const r of D.recs) if (r[k] != null) w.set(r[k], (w.get(r[k]) || 0) + Math.abs(r.rec || r.bil)); D.opts[k] = k === "s" ? D.subs : [...w].sort((x, y) => y[1] - x[1]).map(x => x[0]); }
   for (const k in S.f) S.f[k].clear();
@@ -1248,7 +1258,7 @@ function renderConcl() {
   if (C.dec) { const { vol, pre, tot } = C.dec; card(tot >= 0 ? "teal" : "red", Math.abs(vol) >= Math.abs(pre) ? "Resultado movido por volume" : "Resultado movido por preço", `Efeito volume ${fD(vol, "rec")}, efeito preço ${fD(pre, "rec")}; variação total ${fD(tot, "rec")}.`); }
   if (D.has.rota) { // cidade que aparece em mais rotas em queda
     const city = new Map();
-    for (const r of lines(C.rota, k)) { if (r.d == null) continue; const parts = r.n.split(/\s*(?:›|→|->|–|—|\s-\s|\sx\s|\/)\s*/i).map(x => x.trim()).filter(Boolean); if (parts.length < 2) continue;
+    for (const r of lines(C.rota, k)) { if (r.d == null) continue; const parts = D.od.get(r.n) || []; if (parts.length < 2) continue;
       for (const c of new Set(parts)) { const o = city.get(c) || city.set(c, { n: c, d: 0, dn: 0, tot: 0 }).get(c); o.d += r.d; o.tot++; if (r.d < 0) o.dn++; } }
     const bad = minBy([...city.values()].filter(c => c.dn >= 2 && c.d < 0 && c.dn / c.tot >= .5), "d");
     if (bad) card("red", `${bad.n} exige atenção`, `${bad.dn} das ${bad.tot} rotas de e para ${esc(bad.n)} perderam ${MET[k].toLowerCase()}: ${fD(bad.d, k)} somados.`);
@@ -1278,7 +1288,7 @@ function render() {
   compute();
   document.querySelectorAll('[data-s="g.met"] button').forEach(b => (b.hidden = b.dataset.v === "tm" ? !(D.has.rec && D.has.bil) : !D.has[b.dataset.v]));
   document.querySelectorAll('[data-s="rota.by"] button').forEach(b => (b.hidden = b.dataset.v !== "rota" && D.opts[b.dataset.v].length < 2));
-  document.querySelectorAll('[data-s="rota.by"]').forEach(e => (e.hidden = D.opts.org.length < 2 && D.opts.dst.length < 2));
+  document.querySelectorAll('[data-s="rota.by"]').forEach(e => (e.hidden = D.opts.org.length < 2 && D.opts.dst.length < 2 && D.opts.mercado.length < 2));
   document.querySelectorAll(".cmp-only").forEach(e => (e.hidden = C.single));
   $("#nodata").hidden = !C.none; $("#kpiSec").hidden = $("#mods").hidden = C.none;
   syncFilters();

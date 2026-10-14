@@ -343,6 +343,28 @@ button.kpi { background: none; border: 0; text-align: left; position: relative; 
 .pop::-webkit-scrollbar, .fl-list::-webkit-scrollbar, .tbl-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
 @supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; } }
 
+/* histórico de anexos recentes */
+.recent { margin-top: 34px; text-align: left; }
+.recent .eyebrow { margin: 0; max-width: none; }
+.recent-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.rc-list { display: grid; border-top: 1px solid var(--line); }
+.rc { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 12px; align-items: center; border-bottom: 1px solid var(--line); animation: rise .5s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 60ms); }
+.rc-open { display: contents; background: none; border: 0; color: inherit; text-align: left; }
+.rc-ico { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 8px; color: var(--muted); transition: border-color .25s, color .25s; }
+.rc-ico svg { width: 15px; height: 15px; }
+.rc-t { min-width: 0; padding: 12px 0; cursor: pointer; }
+.rc-t b { display: block; font-weight: 500; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .2s; }
+.rc-t small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc:hover .rc-ico { border-color: var(--white); color: var(--white); }
+.rc-x { background: none; border: 0; color: var(--faint); font-size: 18px; line-height: 1; padding: 6px 8px; border-radius: 6px; transition: color .2s, background .2s; }
+.rc-x:hover { color: var(--red); background: var(--panel-2); }
+.pop .rc-list { border-top: 0; max-height: 260px; overflow: auto; }
+.pop .rc { grid-template-columns: minmax(0, 1fr) auto; padding: 0 2px 0 10px; border-bottom: 0; border-radius: 8px; }
+.pop .rc:hover { background: var(--panel-2); }
+.pop .rc-ico { display: none; }
+.pop .rc-t { padding: 7px 0; } .pop .rc-t b { font-size: 13px; }
+.pop .rc.cur .rc-t b::after { content: " · aberto"; color: var(--muted); font-weight: 400; }
+
 /* ---------- movimento ---------- */
 .btn, .chip, .dz, .link { transition: background .25s, color .25s, border-color .25s, transform .25s var(--ease); }
 .seg button { transition: color .3s, transform .2s var(--ease); }
@@ -443,8 +465,12 @@ body.busy .dz { opacity: .5; pointer-events: none; }
       <button class="link" id="demo" type="button">Ver com dados de exemplo</button>
       <button class="link" id="tpl" type="button">Baixar modelo (.csv)</button>
     </div>
+    <div class="recent" id="recentBox" hidden>
+      <div class="recent-h"><p class="eyebrow">Recentes</p><button class="link" type="button" data-hist-clear>Limpar histórico</button></div>
+      <div class="rc-list" id="recent"></div>
+    </div>
   </div>
-  <small>Os arquivos são lidos no seu navegador. Nada é enviado para servidor.</small>
+  <small>Os arquivos são lidos no seu navegador. Nada é enviado para servidor; os 5 últimos ficam guardados só neste navegador.</small>
 </section>
 
 <!-- painel -->
@@ -461,6 +487,7 @@ body.busy .dz { opacity: .5; pointer-events: none; }
         <div class="pop">
           <p class="eyebrow">Carregados</p>
           <div id="files"></div>
+          <div id="recentMenu" hidden><hr><p class="eyebrow">Recentes</p><div class="rc-list" id="recent2"></div></div>
           <hr>
           <button class="it" data-act="add" type="button">Adicionar arquivo…</button>
           <button class="it" data-act="map" type="button">Ajustar colunas…</button>
@@ -804,7 +831,7 @@ async function readFile(file) {
 /* ==================================================================
    Estado
    ================================================================== */
-const D = { sources: [], recs: [], groups: [], subs: [], has: {} };
+const D = { files: new Map(), hist: null, sources: [], recs: [], groups: [], subs: [], has: {} };
 const dimState = () => ({ esc: "abs", dir: "all", q: "", sort: null, all: false });
 const S = { A: null, B: null, hide: [], g: { met: "rec" }, canal: dimState(), rota: { ...dimState(), by: "rota" }, mes: { esc: "abs" }, rpc: { sel: null, n: 4 }, cmp: { by: "canal", sel: {} },
   f: { canal: new Set(), mercado: new Set(), org: new Set(), dst: new Set(), rota: new Set(), s: new Set() } }; // filtros: campo do registro → valores escolhidos
@@ -817,12 +844,14 @@ const MET = { rec: "Receita", bil: "Bilhetes", tm: "Ticket médio" };
 const MODS = [["canais", "Canais"], ["mix", "Mix"], ["mes", "Mês a mês"], ["rotas", "Rotas"], ["rpc", "Rotas por canal"], ["cmp", "Comparar"], ["concl", "Conclusões"]];
 const SEP = "\u0001";
 
-async function ingest(files) {
+async function ingest(files, opts = {}) {
   let bad = null;
+  if (opts.replace) { D.sources = []; D.files.clear(); }
   document.body.classList.add("busy"); await new Promise(r => setTimeout(r, 60)); // deixa o indicador de leitura aparecer
   for (const f of files) {
     try {
       const sheets = await readFile(f), found = [];
+      D.files.set(f.name, { name: f.name, size: f.size, buf: await f.arrayBuffer() });
       for (const sh of sheets) { const d = detect(sh.aoa); if (d) found.push({ ...d, file: f.name, name: sh.name, sheet: sh.sheet }); }
       const ok = found.filter(valid);
       if (ok.length > 1) ok.forEach(s => (s.name = s.sheet));
@@ -834,6 +863,7 @@ async function ingest(files) {
   }
   document.body.classList.remove("busy");
   rebuild();
+  if (D.recs.length && !opts.fromHist) histSave();
   if (!bad && D.recs.length) toast(`${nf0.format(D.recs.length)} registros carregados`, 2200);
   if (bad) openMap("Não reconheci as colunas de “" + bad.file + "” sozinho. Indique onde está cada informação.");
 }
@@ -1354,13 +1384,13 @@ $("#rpcChips").onclick = e => {
   if (!k) S.rpc.sel = null; else if (!S.rpc.sel) S.rpc.sel = [k]; else { S.rpc.sel = S.rpc.sel.includes(k) ? S.rpc.sel.filter(x => x !== k) : [...S.rpc.sel, k]; if (!S.rpc.sel.length) S.rpc.sel = null; }
   render();
 };
-$("#files").onclick = e => { const b = e.target.closest("[data-rm]"); if (b) { D.sources.splice(+b.dataset.rm, 1); rebuild(); } };
+$("#files").onclick = e => { const b = e.target.closest("[data-rm]"); if (!b) return; const [x] = D.sources.splice(+b.dataset.rm, 1); if (!D.sources.some(s => s.file === x.file)) D.files.delete(x.file); D.hist = null; rebuild(); if (D.recs.length) histSave(); };
 $("#menu").addEventListener("click", e => {
   const act = e.target.closest("[data-act]")?.dataset.act; if (!act) return;
   $("#menu").open = false;
   if (act === "add") pick.click();
   if (act === "map") openMap();
-  if (act === "reset") { D.sources = []; rebuild(); }
+  if (act === "reset") { D.sources = []; D.files.clear(); D.hist = null; rebuild(); histRender(); }
 });
 
 /* ---------- movimento: revelar ao rolar, seletor deslizante, dica flutuante, progresso ---------- */
@@ -1383,6 +1413,52 @@ addEventListener("mousemove", e => {
   tip.style.left = Math.max(8, Math.min(innerWidth - tip.offsetWidth - 8, e.clientX + 14)) + "px"; tip.style.top = Math.min(innerHeight - 40, e.clientY + 18) + "px";
 });
 addEventListener("scroll", () => { tipOff(); const h = document.documentElement.scrollHeight - innerHeight; $("#prog").style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`; }, { passive: true });
+
+/* ---------- histórico: os 5 últimos conjuntos de anexos, só neste navegador (IndexedDB) ---------- */
+const HMAX = 5;
+let dbP = null;
+const idb = () => (dbP ||= new Promise((ok, no) => { const r = indexedDB.open("revenue-painel", 1); r.onupgradeneeded = () => r.result.createObjectStore("hist", { keyPath: "id" }); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }));
+async function store(mode, fn) { const db = await idb(); return new Promise((ok, no) => { const t = db.transaction("hist", mode), req = fn(t.objectStore("hist")); t.oncomplete = () => ok(req?.result); t.onerror = () => no(t.error); }); }
+const histAll = async () => { try { return ((await store("readonly", st => st.getAll())) || []).sort((a, b) => b.at - a.at); } catch (e) { return []; } };
+// identidade pelo conteúdo: o mesmo arquivo (mesmo que renomeado) não vira outra entrada
+async function digest(buf) { try { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", buf))].slice(0, 12).map(b => b.toString(16).padStart(2, "0")).join(""); } catch (e) { return buf.byteLength + ":" + new Uint8Array(buf).slice(0, 64).join("."); } }
+async function histSave() {
+  const files = [...D.files.values()]; if (!files.length) return;
+  try {
+    const keys = (await Promise.all(files.map(f => digest(f.buf)))).sort(), id = keys.join("+");
+    const entry = { id, keys, at: Date.now(), files, label: files.map(f => f.name.replace(/\.[^.]+$/, "")).join(" + "), n: D.recs.length, per: D.groups.length > 1 ? `${D.groups.at(-1)} × ${D.groups.at(-2)}` : D.groups[0] || "", size: files.reduce((a, f) => a + f.size, 0) };
+    const all = await histAll();
+    await store("readwrite", st => { st.put(entry); // some com a entrada antiga que ficou contida nesta (ex.: o mesmo arquivo, agora com outro somado)
+      const rest = all.filter(x => x.id !== id && !(x.keys || [x.id]).every(k => keys.includes(k)));
+      for (const old of all) if (old.id !== id && !rest.includes(old)) st.delete(old.id);
+      for (const old of rest.slice(HMAX - 1)) st.delete(old.id); });
+    D.hist = id; histRender();
+  } catch (e) { /* sem espaço ou navegação privada: o painel segue sem histórico */ }
+}
+const ago = t => { const m = Math.round((Date.now() - t) / 6e4); return m < 1 ? "agora" : m < 60 ? `há ${m} min` : m < 1440 ? `há ${Math.round(m / 60)} h` : new Date(t).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }); };
+const fSize = b => (b >= 1048576 ? nf1.format(b / 1048576) + " MB" : nf0.format(Math.max(1, b / 1024)) + " KB");
+const FILE_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/></svg>';
+async function histRender() {
+  const all = await histAll();
+  const html = all.map((h, i) => `<div class="rc${h.id === D.hist ? " cur" : ""}" style="--i:${i}"><span class="rc-ico" data-hist="${h.id}">${FILE_ICO}</span><span class="rc-t" data-hist="${h.id}" role="button" tabindex="0" title="Abrir ${esc(h.label)}"><b>${esc(h.label)}</b><small>${[h.per, nf0.format(h.n) + " registros", fSize(h.size), ago(h.at)].filter(Boolean).join(" · ")}</small></span><button class="rc-x" type="button" data-hist-rm="${h.id}" aria-label="Tirar do histórico">×</button></div>`).join("");
+  $("#recent").innerHTML = html; $("#recent2").innerHTML = html;
+  $("#recentBox").hidden = $("#recentMenu").hidden = !all.length;
+}
+async function histOpen(id) {
+  const h = (await histAll()).find(x => x.id === id); if (!h) return histRender();
+  $("#menu").open = false; D.hist = id;
+  await ingest(h.files.map(f => new File([f.buf], f.name)), { replace: true, fromHist: true });
+  try { await store("readwrite", st => st.put({ ...h, at: Date.now() })); } catch (e) {}
+  histRender();
+}
+document.addEventListener("click", async e => {
+  const rm = e.target.closest("[data-hist-rm]");
+  if (rm) { e.stopPropagation(); try { await store("readwrite", st => st.delete(rm.dataset.histRm)); } catch (x) {} if (D.hist === rm.dataset.histRm) D.hist = null; return histRender(); }
+  if (e.target.closest("[data-hist-clear]")) { try { await store("readwrite", st => st.clear()); } catch (x) {} D.hist = null; return histRender(); }
+  const op = e.target.closest("[data-hist]"); if (op) histOpen(op.dataset.hist);
+});
+addEventListener("keydown", e => { const op = e.target.closest?.(".rc-t[data-hist]"); if (op && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); histOpen(op.dataset.hist); } });
+histRender();
 
 /* ---------- ajuste manual de colunas ---------- */
 function openMap(msg) {
@@ -1523,7 +1599,7 @@ function demoAOA() {
   }
   return rows;
 }
-$("#demo").onclick = () => { const d = detect(demoAOA()); D.sources = [{ ...d, file: "Exemplo (dados fictícios)", name: "Exemplo" }]; rebuild(); };
+$("#demo").onclick = () => { D.files.clear(); D.hist = null; const d = detect(demoAOA()); D.sources = [{ ...d, file: "Exemplo (dados fictícios)", name: "Exemplo" }]; rebuild(); };
 $("#tpl").onclick = () => {
   const csv = [HEAD, ["App", "Curitiba › Porto Alegre", 2025, "Setembro", "31800,50", 243], ["App", "Curitiba › Porto Alegre", 2026, "Setembro", "82100,00", 680], ["Site oficial", "Porto Alegre › Curitiba", 2025, "Setembro", "55400,00", 380], ["Site oficial", "Porto Alegre › Curitiba", 2026, "Setembro", "49900,00", 371]].map(r => r.join(";")).join("\r\n");
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" })); a.download = "modelo-vendas-canal-rota.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);

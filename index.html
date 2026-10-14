@@ -108,8 +108,9 @@ button { cursor: pointer; }
 /* ---------- barra de módulos ---------- */
 .bar {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; background: var(--bar-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  border-block: 1px solid var(--line); display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding-block: 12px;
+  border-block: 1px solid var(--line); display: grid; gap: 10px; padding-block: 12px;
 }
+.bar-row { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; min-width: 0; }
 .bar .sp { flex: 1; }
 #prog { position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--white); transform-origin: left; transform: scaleX(0); }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -117,6 +118,7 @@ button { cursor: pointer; }
 .chip:hover { color: var(--white); }
 .chip[aria-pressed="true"] { background: var(--white); color: var(--black); border-color: var(--white); }
 .chip.sm { padding: 4px 10px; font-size: 11px; }
+.chip .lg { margin-right: 6px; }
 .seg { position: relative; display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px; }
 .seg button { position: relative; z-index: 1; border: 0; background: transparent; padding: 5px 12px; border-radius: 999px; font-size: 12px; color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--white); color: var(--black); }
@@ -128,9 +130,9 @@ select.sel { appearance: none; background: var(--black); border: 1px solid var(-
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
 .kpi { padding: 26px 22px 26px 0; display: grid; gap: 6px; align-content: start; min-width: 0; }
 .kpi + .kpi { border-left: 1px solid var(--line); padding-left: 22px; }
-.kpi .v { font-size: clamp(26px, 3.4vw, 44px); font-weight: 600; letter-spacing: -.035em; line-height: 1.05; }
+.kpi .v { display: block; font-size: clamp(26px, 3.4vw, 44px); font-weight: 600; letter-spacing: -.035em; line-height: 1.05; }
 .kpi .v small { font-size: .45em; color: var(--muted); font-weight: 500; letter-spacing: 0; margin-right: 4px; }
-.kpi .d { font-size: 13px; color: var(--muted); }
+.kpi .d { display: block; font-size: 13px; color: var(--muted); }
 .decomp { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: clamp(20px, 4vw, 64px); padding-block: 30px; border-bottom: 1px solid var(--line); }
 .decomp h3 { margin: 8px 0 6px; font-size: 17px; letter-spacing: -.01em; font-weight: 600; text-wrap: balance; }
 .decomp p { margin: 0; color: var(--muted); font-size: 13px; }
@@ -138,7 +140,7 @@ select.sel { appearance: none; background: var(--black); border: 1px solid var(-
 /* ---------- módulos ---------- */
 main { display: grid; padding-bottom: 40px; }
 .mod { border-bottom: 1px solid var(--line); padding-block: clamp(36px, 5vw, 64px); display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: clamp(20px, 4vw, 64px); }
-.mod-head { display: grid; gap: 12px; align-content: start; position: sticky; top: 84px; align-self: start; }
+.mod-head { display: grid; gap: 12px; align-content: start; position: sticky; top: 132px; align-self: start; }
 .mod-head h2 { font-size: clamp(22px, 2.4vw, 30px); line-height: 1.12; letter-spacing: -.03em; font-weight: 600; margin: 0; text-wrap: balance; }
 .mod-head p { margin: 0; color: var(--muted); font-size: 14px; max-width: 42ch; }
 .mod-body { display: grid; gap: 22px; min-width: 0; }
@@ -265,13 +267,71 @@ footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wr
 .veil div { border: 1px dashed var(--white); border-radius: 18px; padding: 40px 56px; font-size: 18px; }
 .toast { position: fixed; left: 50%; bottom: 28px; z-index: 80; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--white); color: var(--black); padding: 10px 18px; border-radius: 999px; font-size: 13px; transition: all .35s var(--ease); max-width: 90vw; }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
-dialog { border: 1px solid var(--line-strong); border-radius: 18px; background: var(--panel); color: var(--white); padding: 26px; width: min(520px, 92vw); }
+dialog { overflow: visible; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--panel); color: var(--white); padding: 26px; width: min(520px, 92vw); }
 dialog::backdrop { background: rgba(0,0,0,.6); backdrop-filter: blur(4px); }
 dialog h2 { margin: 0 0 6px; font-size: 20px; letter-spacing: -.02em; font-weight: 600; }
 dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 .map { display: grid; grid-template-columns: 110px 1fr; gap: 10px 14px; align-items: center; font-size: 13px; }
 .map select { width: 100%; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }
 .dlg-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+/* ---------- seletor suspenso próprio (substitui o <select> nativo, que não segue o visual) ---------- */
+.dd { position: relative; display: inline-block; min-width: 0; }
+.dd-b { display: inline-flex; align-items: center; gap: 8px; max-width: min(260px, 60vw); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px; font-size: 12px; transition: background .25s, color .25s, border-color .25s, transform .2s var(--ease); }
+.dd-b span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-b svg { width: 9px; height: 9px; flex: none; transition: transform .35s var(--ease); }
+.dd-b:hover { border-color: var(--white); }
+.dd-b:active { transform: scale(.97); }
+.dd.open .dd-b { background: var(--white); color: var(--black); border-color: var(--white); }
+.dd.open .dd-b svg { transform: rotate(180deg); }
+.dd .pop { left: 0; right: auto; width: max-content; min-width: 100%; max-width: min(320px, 86vw); max-height: 320px; overflow: auto; overscroll-behavior: contain; }
+.dd .pop .it { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .2s, color .2s; }
+.pop .it[aria-selected="true"] { background: var(--panel-2); font-weight: 600; }
+.pop .it[aria-selected="true"]::after { content: "✓"; float: right; margin-left: 14px; color: var(--muted); font-weight: 400; }
+.dd.fl .dd-b { color: var(--muted); }
+.dd.fl .dd-b:hover, .dd.fl.on .dd-b { color: var(--white); border-color: var(--white); }
+.dd.fl.open .dd-b { color: var(--black); }
+.dd.fl .pop { width: min(280px, 86vw); max-height: none; overflow: visible; }
+.fl-list { max-height: 250px; overflow: auto; overscroll-behavior: contain; }
+.pop .it.ck { display: flex; align-items: center; gap: 10px; }
+.pop .it.ck::before { content: ""; width: 14px; height: 14px; flex: none; border: 1px solid var(--line-strong); border-radius: 4px; transition: background .2s, border-color .2s, box-shadow .2s; }
+.pop .it.ck[aria-checked="true"]::before { background: var(--white); border-color: var(--white); box-shadow: inset 0 0 0 3px var(--panel); }
+.pop .it.ck span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.fq { width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--line); padding: 8px 10px; font-size: 13px; outline: 0; margin-bottom: 4px; }
+.fq::placeholder { color: var(--faint); }
+.map .dd { display: block; }
+.map .dd-b { width: 100%; max-width: none; justify-content: space-between; border-radius: 8px; padding: 7px 10px; font-size: 13px; }
+.map .dd .pop { width: 100%; max-width: none; max-height: 210px; }
+/* indicadores também escolhem a métrica */
+button.kpi { background: none; border: 0; text-align: left; position: relative; }
+.kpi .v { transition: color .3s; }
+.kpi[aria-pressed="false"] .v { color: var(--muted); }
+.kpi[aria-pressed="false"]:hover .v { color: var(--white); }
+.kpi[aria-pressed]::after { content: ""; position: absolute; left: 0; right: 22px; bottom: -1px; height: 2px; background: var(--white); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease); }
+.kpi + .kpi[aria-pressed]::after { left: 22px; }
+.kpi[aria-pressed="true"]::after { transform: scaleX(1); }
+.drow[data-fk] { cursor: pointer; }
+.nodata { padding-block: 60px; color: var(--muted); }
+/* comparador lado a lado */
+.cmp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 14px; }
+.cmp-p { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px 8px; min-width: 0; animation: rise .6s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 60ms); }
+.cmp-p h4 { margin: 0 0 10px; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; font-weight: 500; color: var(--muted); }
+.cr { display: grid; gap: 4px; padding: 9px 0; border-top: 1px solid var(--line); }
+.cr .t, .cr .x { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.cr .t { font-size: 12.5px; } .cr .t span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cr .t b { white-space: nowrap; font-weight: 600; }
+.cr .x { font-size: 11px; color: var(--muted); }
+.cr i { display: block; border-radius: 2px; transform-origin: left; }
+.cr .bb { height: 7px; background: var(--white); } .cr.up .bb { background: var(--teal); } .cr.down .bb { background: var(--red); }
+.cr .ba { height: 3px; background: var(--gray-bar); }
+
+/* logos de canais e viações: plaquinha branca, como no app de consulta */
+.lg { display: inline-grid; place-items: center; width: 34px; height: 20px; margin-right: 8px; vertical-align: middle; border-radius: 5px; border: 1px solid var(--line); background: #fff; overflow: hidden; flex: none; }
+.lg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lg img[src$=".svg"] { object-fit: contain; padding: 0 3px; }
+.lg.sm { width: 28px; height: 16px; border-radius: 4px; margin-right: 6px; }
+.lg.md { width: 46px; height: 27px; border-radius: 6px; margin-right: 10px; }
+.heat th .lg { display: grid; margin: 0 auto 5px; }
+.drow .nm .lg { margin-left: 6px; margin-right: 6px; }
 
 /* ---------- movimento ---------- */
 .btn, .chip, .dz, .link { transition: background .25s, color .25s, border-color .25s, transform .25s var(--ease); }
@@ -285,8 +345,8 @@ dialog p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 .rv > * { opacity: 0; transform: translateY(16px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
 .rv > :nth-child(2) { transition-delay: .1s; } .rv > :nth-child(3) { transition-delay: .2s; } .rv > :nth-child(4) { transition-delay: .3s; }
 .rv.in > * { opacity: 1; transform: none; }
-.rv:not(.in) .b, .rv:not(.in) .rr .m i { animation: none; transform: scaleX(0); }
-.rv.in .b, .rv.in .rr .m i { animation: grow 1s var(--ease) backwards; animation-delay: calc(.15s + var(--i, 0) * 22ms); }
+.rv:not(.in) .b, .rv:not(.in) .rr .m i, .rv:not(.in) .cr i { animation: none; transform: scaleX(0); }
+.rv.in .b, .rv.in .rr .m i, .rv.in .cr i { animation: grow 1s var(--ease) backwards; animation-delay: calc(.15s + var(--i, 0) * 22ms); }
 .b.tw { animation: none !important; }
 .rv:not(.in) .dtrack .ln { opacity: 0; }
 .rv:not(.in) .dot.b { left: var(--from) !important; }
@@ -330,15 +390,15 @@ body.busy .dz { opacity: .5; pointer-events: none; }
   .mrow { grid-template-columns: 1fr; }
   .mrow .nm { text-align: left; color: var(--white); }
   .cols, .two { grid-template-columns: 1fr; }
-  .bar { position: static; }
+  .bar { position: relative; }
 }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } .rv > * { opacity: 1 !important; transform: none !important; } .rv .b, .rv .rr .m i { transform: none !important; } .rv .dtrack .ln { opacity: 1 !important; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } .rv > * { opacity: 1 !important; transform: none !important; } .rv .b, .rv .rr .m i, .rv .cr i { transform: none !important; } .rv .dtrack .ln { opacity: 1 !important; } }
 @media print {
   :root, :root[data-mode] { color-scheme: light; --black: #fff; --panel: #fff; --panel-2: #f4f4f0; --white: #111; --muted: #555; --faint: #888; --line: #ddd; --line-strong: #bbb; --gray-bar: #d5d5cf; --pos-text: #377073; --neg-text: #c2443f; }
   body::before, .no-print, .ctl, .export { display: none !important; }
   .mod-head { position: static; } .mod, .card, .ins article { break-inside: avoid; }
   * { animation: none !important; transition: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .rv > * { opacity: 1 !important; transform: none !important; } .rv .b, .rv .rr .m i { transform: none !important; } .rv .dtrack .ln { opacity: 1 !important; }
+  .rv > * { opacity: 1 !important; transform: none !important; } .rv .b, .rv .rr .m i, .rv .cr i { transform: none !important; } .rv .dtrack .ln { opacity: 1 !important; }
   #load, .tip { display: none !important; }
 }
 </style>
@@ -409,11 +469,22 @@ body.busy .dz { opacity: .5; pointer-events: none; }
   </section>
 
   <nav class="wrap bar no-print" aria-label="Módulos do painel">
-    <i id="prog"></i><span class="lbl">Módulos</span>
-    <div class="chips" id="modChips"></div>
-    <span class="sp"></span>
-    <label class="cmp" id="cmp"><select class="sel" id="selB" aria-label="Período analisado"></select><span id="vs">×</span><select class="sel" id="selA" aria-label="Período de comparação"></select></label>
+    <i id="prog"></i>
+    <div class="bar-row">
+      <span class="lbl">Módulos</span>
+      <div class="chips" id="modChips"></div>
+      <span class="sp"></span>
+      <div class="cmp" id="cmp"><span class="lbl">Período</span><div id="selB"></div><span id="vs">×</span><div id="selA"></div></div>
+    </div>
+    <div class="bar-row">
+      <span class="lbl">Ver por</span>
+      <div class="seg" data-s="g.met" role="group" aria-label="Métrica"><button type="button" data-v="rec">Receita</button><button type="button" data-v="bil">Bilhetes</button><button type="button" data-v="tm">Ticket médio</button></div>
+      <span class="lbl" id="fLbl">Filtrar</span>
+      <div class="bar-row" id="filters"></div>
+      <button class="link" id="fClear" type="button" hidden>Limpar filtros</button>
+    </div>
   </nav>
+  <p class="wrap nodata" id="nodata" hidden>Nenhum dado com esses filtros. Remova um filtro ou troque o período.</p>
 
   <section class="wrap" id="kpiSec">
     <div class="kpi-head">
@@ -430,12 +501,10 @@ body.busy .dz { opacity: .5; pointer-events: none; }
   <main class="wrap" id="mods">
     <!-- CANAIS -->
     <section class="mod rv" data-mod="canais" id="m-canais">
-      <div class="mod-head"><p class="eyebrow">Canais</p><h2>Quem puxou e quem perdeu</h2><p>Variação por canal entre os dois períodos. Destaque nos que mais mexeram no resultado; o resto fica em cinza como contexto.</p></div>
+      <div class="mod-head"><p class="eyebrow">Canais</p><h2>Quem puxou e quem perdeu</h2><p>Variação por canal entre os dois períodos, na métrica escolhida em “Ver por”. Clique numa barra para filtrar o painel por aquele canal.</p></div>
       <div class="mod-body">
         <div class="ctl">
-          <span class="lbl">Métrica</span>
-          <div class="seg" data-s="canal.met" role="group" aria-label="Métrica"><button type="button" data-v="rec">Receita</button><button type="button" data-v="bil">Bilhetes</button><button type="button" data-v="tm">Ticket médio</button></div>
-          <div class="seg cmp-only" data-s="canal.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ absoluto</button><button type="button" data-v="pct">Δ %</button></div>
+          <div class="seg cmp-only" data-s="canal.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ absoluto</button><button type="button" data-v="val">Valor</button><button type="button" data-v="pct">Δ %</button></div>
           <div class="seg cmp-only" data-s="canal.dir" role="group" aria-label="Direção"><button type="button" data-v="all">Todos</button><button type="button" data-v="up">Cresceram</button><button type="button" data-v="down">Caíram</button></div>
         </div>
         <p class="title-insight" id="cTitle"></p>
@@ -471,11 +540,11 @@ body.busy .dz { opacity: .5; pointer-events: none; }
 
     <!-- ROTAS -->
     <section class="mod rv" data-mod="rotas" id="m-rotas">
-      <div class="mod-head"><p class="eyebrow">Rotas · todos os canais</p><h2>Onde a malha cresce e onde perde</h2><p>Cada rota por sentido. Em destaque, as maiores altas e as maiores quedas.</p></div>
+      <div class="mod-head"><p class="eyebrow">Rotas · todos os canais</p><h2>Onde a malha cresce e onde perde</h2><p>Por rota (cada sentido), por origem ou por destino. Clique numa barra para filtrar o painel.</p></div>
       <div class="mod-body">
         <div class="ctl">
-          <div class="seg" data-s="rota.met" role="group" aria-label="Métrica"><button type="button" data-v="rec">Receita</button><button type="button" data-v="bil">Bilhetes</button><button type="button" data-v="tm">Ticket médio</button></div>
-          <div class="seg cmp-only" data-s="rota.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ absoluto</button><button type="button" data-v="pct">Δ %</button></div>
+          <div class="seg" data-s="rota.by" role="group" aria-label="Agrupar por"><button type="button" data-v="rota">Rota</button><button type="button" data-v="org">Origem</button><button type="button" data-v="dst">Destino</button></div>
+          <div class="seg cmp-only" data-s="rota.esc" role="group" aria-label="Escala"><button type="button" data-v="abs">Δ absoluto</button><button type="button" data-v="val">Valor</button><button type="button" data-v="pct">Δ %</button></div>
           <div class="seg cmp-only" data-s="rota.dir" role="group" aria-label="Direção"><button type="button" data-v="all">Todas</button><button type="button" data-v="up">Cresceram</button><button type="button" data-v="down">Caíram</button></div>
           <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="rQ" type="search" placeholder="Filtrar cidade…" autocomplete="off" aria-label="Filtrar rotas por cidade"></label>
         </div>
@@ -494,12 +563,24 @@ body.busy .dz { opacity: .5; pointer-events: none; }
       <div class="mod-body">
         <div class="ctl">
           <span class="lbl">Canal</span><div class="chips" id="rpcChips"></div>
-          <span class="lbl">Top</span><select class="sel" id="rpcN" aria-label="Quantidade de rotas por lado"><option>3</option><option>4</option><option>5</option><option>8</option></select>
+          <span class="lbl">Top</span><div id="rpcN"></div>
         </div>
         <div class="cards" id="rpcCards"></div>
         <p class="title-insight" id="heatTitle" style="margin-top:18px"></p>
         <p class="sub" id="heatSub"></p>
         <div class="tbl-wrap" id="heatWrap" style="border:0"><table class="heat" id="heat"></table></div>
+      </div>
+    </section>
+
+    <!-- COMPARAR -->
+    <section class="mod rv" data-mod="cmp" id="m-cmp">
+      <div class="mod-head"><p class="eyebrow">Comparar</p><h2>Lado a lado</h2><p>Escolha canais, rotas, origens ou destinos e compare receita, bilhetes, ticket médio e participação. A barra grossa é o período analisado; a fina, o anterior.</p></div>
+      <div class="mod-body">
+        <div class="ctl"><span class="lbl">Comparar</span><div class="seg" data-s="cmp.by" id="cmpBy" role="group" aria-label="Dimensão"></div></div>
+        <div class="ctl"><div class="chips" id="cmpChips"></div><div id="cmpMore"></div></div>
+        <p class="title-insight" id="cmpTitle"></p>
+        <div class="cmp-grid" id="cmpGrid"></div>
+        <p class="src">Respeita os filtros ativos. Até 6 itens por vez.</p>
       </div>
     </section>
 
@@ -705,11 +786,16 @@ async function readFile(file) {
    Estado
    ================================================================== */
 const D = { sources: [], recs: [], groups: [], subs: [], has: {} };
-const dimState = () => ({ met: "rec", esc: "abs", dir: "all", q: "", sort: null, all: false });
-const S = { A: null, B: null, sub: null, hide: [], canal: dimState(), rota: dimState(), mes: { esc: "abs" }, rpc: { sel: null, n: 4 } };
+const dimState = () => ({ esc: "abs", dir: "all", q: "", sort: null, all: false });
+const S = { A: null, B: null, hide: [], g: { met: "rec" }, canal: dimState(), rota: { ...dimState(), by: "rota" }, mes: { esc: "abs" }, rpc: { sel: null, n: 4 }, cmp: { by: "canal", sel: {} },
+  f: { canal: new Set(), org: new Set(), dst: new Set(), rota: new Set(), s: new Set() } }; // filtros: campo do registro → valores escolhidos
+const FDEF = [["canal", "Canal"], ["org", "Origem"], ["dst", "Destino"], ["rota", "Rota"], ["s", "Mês"]];
+const DIMN = { canal: ["canal", "canais", "Canal"], rota: ["rota", "rotas", "Rota"], org: ["origem", "origens", "Origem"], dst: ["destino", "destinos", "Destino"] };
+const SPLIT = /\s*(?:›|→|->|–|—|\s-\s|\sx\s|\/)\s*/i;
+const CHEV = '<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 3.5 5 7l3.5-3.5"/></svg>';
 let C = {}; // agregados do recorte atual
 const MET = { rec: "Receita", bil: "Bilhetes", tm: "Ticket médio" };
-const MODS = [["canais", "Canais"], ["mix", "Mix"], ["mes", "Mês a mês"], ["rotas", "Rotas"], ["rpc", "Rotas por canal"], ["concl", "Conclusões"]];
+const MODS = [["canais", "Canais"], ["mix", "Mix"], ["mes", "Mês a mês"], ["rotas", "Rotas"], ["rpc", "Rotas por canal"], ["cmp", "Comparar"], ["concl", "Conclusões"]];
 const SEP = "\u0001";
 
 async function ingest(files) {
@@ -750,9 +836,15 @@ function rebuild() {
   }
   D.groups = [...ord.keys()].sort((a, b) => ord.get(a) - ord.get(b) || String(a).localeCompare(b, "pt-BR", { numeric: true }));
   D.subs = [...new Set(D.recs.map(r => r.s).filter(Boolean))].sort((a, b) => a - b);
-  S.B = D.groups.at(-1); S.A = D.groups.length > 1 ? D.groups.at(-2) : null; S.sub = null;
-  const m0 = D.has.rec ? "rec" : "bil";
-  Object.assign(S.canal, dimState(), { met: m0 }); Object.assign(S.rota, dimState(), { met: m0 }); S.rpc.sel = null;
+  S.B = D.groups.at(-1); S.A = D.groups.length > 1 ? D.groups.at(-2) : null;
+  // origem e destino saem do nome da rota; opções de filtro ordenadas pelo tamanho
+  for (const r of D.recs) { const c = r.rota ? r.rota.split(SPLIT).map(x => x.trim()).filter(Boolean) : []; r.org = c.length >= 2 ? c[0] : null; r.dst = c.length >= 2 ? c.at(-1) : null; }
+  D.opts = {};
+  for (const [k] of FDEF) { const w = new Map(); for (const r of D.recs) if (r[k] != null) w.set(r[k], (w.get(r[k]) || 0) + Math.abs(r.rec || r.bil)); D.opts[k] = k === "s" ? D.subs : [...w].sort((x, y) => y[1] - x[1]).map(x => x[0]); }
+  for (const k in S.f) S.f[k].clear();
+  S.g.met = D.has.rec ? "rec" : "bil";
+  Object.assign(S.canal, dimState()); Object.assign(S.rota, dimState(), { by: "rota" }); S.rpc.sel = null; S.cmp.sel = {};
+  buildFilters();
   $("#rQ").value = "";
   prevNum.clear();
   const go = () => { flip(); render(); scrollTo({ top: 0, behavior: "instant" }); reveal(); };
@@ -763,10 +855,11 @@ function rebuild() {
    Cálculo
    ================================================================== */
 const Z = () => ({ a: { rec: 0, bil: 0 }, b: { rec: 0, bil: 0 } });
-function agg(keyFn, sub = S.sub) {
+const pass = (r, skip) => { for (const k in S.f) if (k !== skip && S.f[k].size && !S.f[k].has(r[k])) return false; return true; };
+function agg(keyFn, month = null) {
   const m = new Map(), t = Z();
   for (const r of D.recs) {
-    if (sub != null && r.s !== sub) continue;
+    if (month != null ? r.s !== month || !pass(r, "s") : !pass(r)) continue;
     const side = r.g === S.B ? "b" : S.A != null && r.g === S.A ? "a" : null; if (!side) continue;
     t[side].rec += r.rec; t[side].bil += r.bil;
     const k = keyFn && keyFn(r); if (k == null || k === false) continue;
@@ -781,19 +874,66 @@ function L(o, k) { const a = C.single ? null : mv(o.a, k), b = mv(o.b, k), d = a
 const lines = (map, k) => [...map].map(([n, o]) => ({ n, o, ...L(o, k) }));
 
 function compute() {
-  C = { single: S.A == null };
-  C.met0 = D.has.rec ? "rec" : "bil";
+  C = { single: S.A == null, _by: {} };
+  const g = S.g;
+  if (g.met === "tm" && !(D.has.rec && D.has.bil)) g.met = "rec";
+  if (g.met !== "tm" && !D.has[g.met]) g.met = D.has.rec ? "rec" : "bil";
+  C.k = g.met; C.ka = C.k === "tm" ? (D.has.rec ? "rec" : "bil") : C.k; // ka: métrica somável, para participação e contribuição
+  C.by = f => (C._by[f] ||= agg(r => r[f]).m);
   C.T = agg(null).t;
-  C.canal = agg(r => r.canal).m; C.rota = agg(r => r.rota).m;
+  C.none = !(C.T.a.rec || C.T.a.bil || C.T.b.rec || C.T.b.bil);
+  C.canal = C.by("canal"); C.rota = C.by("rota");
   C.cr = agg(r => r.canal && r.rota && r.canal + SEP + r.rota).m;
   C.mdim = D.has.canal ? "canal" : "rota";
-  C.months = D.subs.map(m => { const x = agg(r => r[C.mdim], m); return { m, map: x.m, t: x.t }; });
+  C.months = (S.f.s.size ? D.subs.filter(m => S.f.s.has(m)) : D.subs).map(m => { const x = agg(r => r[C.mdim], m); return { m, map: x.m, t: x.t }; });
   // efeito volume e efeito preço
   const a = C.T.a, b = C.T.b;
   C.dec = !C.single && a.bil > 0 && b.bil > 0 && D.has.rec ? { vol: (b.bil - a.bil) * (a.rec / a.bil), pre: (b.rec / b.bil - a.rec / a.bil) * b.bil, tot: b.rec - a.rec } : null;
 }
-const avail = k => ({ canais: D.has.canal, mix: D.has.canal && !C.single, mes: D.subs.length >= 2, rotas: D.has.rota, rpc: D.has.canal && D.has.rota, concl: !C.single }[k]);
-const perLabel = () => (S.sub ? MONF[S.sub] + " · " : "") + (C.single ? S.B : `${S.B} × ${S.A}`);
+const avail = k => ({ canais: D.has.canal, mix: D.has.canal && !C.single, mes: C.months.length >= 2, rotas: D.has.rota, rpc: D.has.canal && D.has.rota, cmp: Object.keys(DIMN).some(d => D.opts[d].length > 1), concl: !C.single }[k]);
+const perLabel = () => (S.f.s.size ? [...S.f.s].sort((a, b) => a - b).map(m => MONF[m]).join(" + ") + " · " : "") + (C.single ? S.B : `${S.B} × ${S.A}`);
+const filterLabel = () => FDEF.filter(([k]) => k !== "s" && S.f[k].size).map(([k, l]) => `${l}: ${[...S.f[k]].slice(0, 3).join(", ")}${S.f[k].size > 3 ? ` +${S.f[k].size - 3}` : ""}`).join(" · ");
+
+/* ---------- seletor suspenso e filtros ---------- */
+function dd(el, opts, value, onPick, ph = "—") {
+  el.classList.add("dd"); el._opts = opts; el._on = onPick; el._val = value;
+  const cur = opts.find(o => o.v === value);
+  el.html = `<button type="button" class="dd-b" aria-haspopup="listbox"><span>${esc(cur ? cur.l : ph)}</span>${CHEV}</button><div class="pop" role="listbox" hidden>${opts.map((o, i) => `<button type="button" class="it" role="option" data-i="${i}" aria-selected="${o.v === value}">${esc(o.l)}</button>`).join("")}</div>`;
+}
+const ddClose = () => document.querySelectorAll(".dd.open").forEach(d => { d.classList.remove("open"); d.querySelector(".pop").hidden = true; });
+function ddOpen(d) {
+  const was = d.classList.contains("open"); ddClose(); if (was) return;
+  const pop = d.querySelector(".pop"); d.classList.add("open"); pop.hidden = false; pop.style.translate = "";
+  const r = pop.getBoundingClientRect(); if (r.right > innerWidth - 8) pop.style.translate = `${innerWidth - 8 - r.right}px 0`; // não deixa sair da tela
+  pop.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+}
+const fText = (k, v) => (k === "s" ? MONF[v] : v);
+function buildFilters() {
+  $("#filters").innerHTML = FDEF.filter(([k]) => D.opts[k].length > 1).map(([k, l]) => `<div class="dd fl" data-f="${k}"><button type="button" class="dd-b" aria-haspopup="true"><span>${l}</span>${CHEV}</button><div class="pop" hidden>${D.opts[k].length > 8 ? `<input class="fq" type="search" placeholder="Buscar ${l.toLowerCase()}…" autocomplete="off" aria-label="Buscar ${l.toLowerCase()}">` : ""}<div class="fl-list">${D.opts[k].map((v, i) => `<button type="button" class="it ck" role="menuitemcheckbox" aria-checked="false" data-i="${i}">${k === "canal" ? lg(v, "sm") : ""}<span>${esc(fText(k, v))}</span></button>`).join("")}</div><hr><button type="button" class="it" data-clear>Limpar ${l.toLowerCase()}</button></div></div>`).join("");
+}
+function syncFilters() {
+  let any = false;
+  document.querySelectorAll("#filters .dd").forEach(d => {
+    const k = d.dataset.f, set = S.f[k], l = FDEF.find(x => x[0] === k)[1]; any ||= set.size > 0;
+    d.classList.toggle("on", set.size > 0);
+    d.querySelector(".dd-b span").textContent = !set.size ? l : set.size === 1 ? fText(k, [...set][0]) : `${l} · ${set.size}`;
+    d.querySelectorAll(".ck").forEach(b => b.setAttribute("aria-checked", set.has(D.opts[k][+b.dataset.i])));
+  });
+  $("#fClear").hidden = !any; $("#fLbl").hidden = !$("#filters").children.length;
+}
+// logos: o nome do canal é casado com o nome do arquivo (sem acento, espaço ou hífen)
+const LOGO_FILES = "1001.png adamantina.svg aguia-branca.svg aguiaflex.png andorinha.svg brasil-sul.svg brasileiro.svg busco.svg buser.svg catarinense.png catedral.svg clickbus.svg clubegiro.png cometa.png emtram.svg esmeralda.svg eucatur.svg expresso-prata.svg expresso-uniao.svg flixbus.png garcia.svg gontijo.svg graciosa.svg guanabara.svg guerino-seiscento.svg itapemirim.svg lirabus.svg macaense.png motta.svg nacional-expresso.svg notavel.svg oficial.png ouro-e-prata.svg outlet.png outletmp.png passaro-marron.svg penha.svg pluma.svg princesa-dos-campos.svg progresso.svg queropassagem.png rapido-campinas.svg rapido-federal.svg rapido-ribeirao.png real-expresso.svg real-maia.svg reunidas-paulista.svg reunidas.svg riodoce.svg roderotas.svg sampaio.svg santa-cruz.svg santa-maria.svg sao-geraldo.svg solimoes.png sul.png unesul.svg util.svg vale-do-tiete.svg wemobi.png".split(" ");
+const LOGO = new Map(LOGO_FILES.map(f => [f.replace(/\.\w+$/, "").replace(/-/g, ""), f]));
+const LOGO_ALIAS = { expressodosul: "sul.png", oficial: "oficial.png", siteoficial: "oficial.png", jca: "oficial.png", grupojca: "oficial.png", outlethm: "outlet.png", outletmp: "outletmp.png" };
+const logoMemo = new Map();
+function logoFile(name) {
+  if (!name) return null; if (logoMemo.has(name)) return logoMemo.get(name);
+  const t = norm(name).split(" ").filter(Boolean); let f = null; // procura palavras inteiras, do trecho mais longo ao mais curto
+  for (let len = t.length; len >= 1 && !f; len--) for (let i = 0; i + len <= t.length && !f; i++) { const k = t.slice(i, i + len).join(""); f = LOGO_ALIAS[k] || (k.length >= 4 && LOGO.get(k)) || null; }
+  logoMemo.set(name, f); return f;
+}
+const lg = (name, size = "") => { const f = logoFile(name); return f ? `<span class="lg ${size}"><img src="logos/${f}" alt="" loading="lazy"></span>` : ""; };
+const toggleSet = (set, v) => (set.has(v) ? set.delete(v) : set.add(v));
 
 /* ==================================================================
    Componentes
@@ -809,8 +949,8 @@ function divChart(el, rows) {
   rows.forEach((r, i) => {
     const w = Math.abs(r.v) / span * 100, left = r.v >= 0 ? z : z - w, tone = r.tone || (r.v >= 0 ? "pos" : "neg");
     let n = old.get(r.n); const fresh = !n;
-    if (fresh) { n = document.createElement("div"); n.innerHTML = '<span class="nm"></span><span class="track"><span class="zero"></span><span class="b"></span></span><span class="val"></span>'; n.firstChild.textContent = r.n; }
-    n.className = "drow" + (r.hi ? " hi" : "") + (fresh ? " enter" : ""); n.style.setProperty("--i", fresh ? Math.min(i, 30) : 0); n.dataset.tip = r.tip || r.n;
+    if (fresh) { n = document.createElement("div"); n.innerHTML = '<span class="nm"></span><span class="track"><span class="zero"></span><span class="b"></span></span><span class="val"></span>'; n.firstChild.innerHTML = (r.lg || "") + esc(r.n); }
+    n.className = "drow" + (r.hi ? " hi" : "") + (fresh ? " enter" : ""); if (r.fk) { n.dataset.fk = r.fk; n.dataset.fv = r.n; } else delete n.dataset.fk; n.style.setProperty("--i", fresh ? Math.min(i, 30) : 0); n.dataset.tip = r.tip || r.n;
     const b = n.querySelector(".b"), val = n.lastChild;
     if (fresh || !live) n.querySelector(".zero").style.left = z + "%";
     b.className = "b " + tone + (fresh && !live ? "" : " tw");
@@ -839,7 +979,7 @@ function fullCols(first) {
   const r = o => L(o, "rec"), q = o => L(o, "bil"), t = o => L(o, "tm");
   const two = (b, a) => b + (s ? "" : `<small>${a}</small>`); // atual em cima, anterior embaixo
   return [
-    { k: "n", h: first, f: x => esc(x.n), sv: x => x.n },
+    { k: "n", h: first, f: x => (first === "Canal" ? lg(x.n, "sm") : "") + esc(x.n), sv: x => x.n },
     R && { k: "rb", h: "Receita", f: x => two(fInt(r(x.o).b), fInt(r(x.o).a)), sv: x => r(x.o).b },
     R && !s && { k: "rd", h: "Δ R$", f: x => sg(r(x.o).d) + fInt(Math.abs(r(x.o).d)), sv: x => r(x.o).d, c: x => cls(r(x.o).d) },
     R && !s && { k: "rp", h: "Δ %", f: x => fPct(r(x.o).p), sv: x => r(x.o).p, c: x => cls(r(x.o).d) },
@@ -851,8 +991,8 @@ function fullCols(first) {
   ].filter(Boolean);
 }
 // frase-título de um conjunto de linhas
-function insight(dim, met) {
-  const many = dim === "canal" ? "canais" : "rotas", rows = lines(C[dim], met);
+function insight(map, many, met) {
+  const rows = lines(map, met);
   if (C.single) { const top = maxBy(rows.filter(r => r.b != null), "b"); return top ? `${top.n} lidera em ${MET[met].toLowerCase()}: ${fV(top.b, met)}` : ""; }
   const v = rows.filter(r => r.d != null); if (!v.length) return "";
   const top = maxBy(v, "d"), bot = minBy(v, "d"), T = L(C.T, met);
@@ -870,15 +1010,16 @@ function insight(dim, met) {
    ================================================================== */
 function renderTop() {
   const T = C.T, s = C.single, R = L(T, "rec"), B = L(T, "bil"), M = L(T, "tm");
-  const opt = sel => D.groups.map(g => `<option${g === sel ? " selected" : ""}>${esc(g)}</option>`).join("");
-  $("#selB").html = opt(S.B); $("#selA").html = opt(S.A);
+  const gs = D.groups.map(g => ({ v: g, l: g }));
+  dd($("#selB"), gs, S.B, v => { const old = S.B; S.B = v; if (S.A === v) S.A = old; render(); });
+  dd($("#selA"), gs, S.A, v => { const old = S.A; S.A = v; if (S.B === v) S.B = old; render(); });
   $("#selA").hidden = $("#vs").hidden = s; $("#cmp").hidden = D.groups.length < 2;
-  $("#ctx").textContent = "Revenue Management · " + D.sources.map(x => x.file.replace(/\.[^.]+$/, "")).join(" + ");
+  $("#ctx").textContent = ["Revenue Management", D.sources.map(x => x.file.replace(/\.[^.]+$/, "")).join(" + "), filterLabel()].filter(Boolean).join(" · ");
   $("#per").textContent = perLabel(); $("#kpiPer").textContent = perLabel();
-  $("#subs").html = D.subs.length > 1 ? `<button class="chip sm" type="button" data-m="" aria-pressed="${S.sub == null}">Todos os meses</button>` + D.subs.map(m => `<button class="chip sm" type="button" data-m="${m}" aria-pressed="${S.sub === m}">${MONF[m]}</button>`).join("") : "";
+  $("#subs").html = D.subs.length > 1 ? `<button class="chip sm" type="button" data-m="" aria-pressed="${!S.f.s.size}">Todos os meses</button>` + D.subs.map(m => `<button class="chip sm" type="button" data-m="${m}" aria-pressed="${S.f.s.has(m)}">${MONF[m]}</button>`).join("") : "";
 
   // parágrafo de abertura
-  const main = D.has.rec ? R : B, mk = C.met0, ch = D.has.canal ? lines(C.canal, mk).filter(r => r.d != null) : [];
+  const main = D.has.rec ? R : B, mk = C.ka, ch = D.has.canal ? lines(C.canal, mk).filter(r => r.d != null) : [];
   let lead;
   if (s) lead = `Total de <b>${fV(main.b, mk)}</b>${D.has.rec && D.has.bil ? ` em <b>${fInt(B.b)}</b> bilhetes, ticket médio de <b>${fV(M.b, "tm")}</b>` : ""} em ${esc(S.B)}. Carregue outro período para comparar.`;
   else {
@@ -892,13 +1033,13 @@ function renderTop() {
   $("#lead").html = lead;
 
   // KPIs
-  const tile = (k, val, fmt, d) => ({ val, fmt, html: `<div class="kpi"><p class="eyebrow">${k}</p><div class="v">${fmt(val)}</div><div class="d">${d}</div></div>` });
+  const tile = (k, val, fmt, d, mk) => ({ val, fmt, html: mk ? `<button type="button" class="kpi" data-k="${mk}" aria-pressed="${mk === C.k}" data-tip="Ver o painel por ${k.toLowerCase()}"><span class="eyebrow">${k}</span><span class="v">${fmt(val)}</span><span class="d">${d}</span></button>` : `<div class="kpi"><p class="eyebrow">${k}</p><div class="v">${fmt(val)}</div><div class="d">${d}</div></div>` });
   const big = (v, k) => (k === "bil" ? fInt(v) : `<small>R$</small>${fV(v, k).replace("R$ ", "")}`);
   const sub = (x, k) => (s ? esc(S.B) : x.p == null ? "sem base de comparação" : `<span class="pill ${cls(x.d)}">${fPct(x.p)}</span> ${fD(x.d, k)} · era ${fV(x.a, k)}`);
   const tiles = [];
-  if (D.has.rec) tiles.push(tile("Receita", R.b, v => big(v, "rec"), sub(R, "rec")));
-  if (D.has.bil) tiles.push(tile("Bilhetes", B.b, v => big(v, "bil"), sub(B, "bil")));
-  if (D.has.rec && D.has.bil) tiles.push(tile("Ticket médio", M.b, v => big(v, "tm"), sub(M, "tm")));
+  if (D.has.rec) tiles.push(tile("Receita", R.b, v => big(v, "rec"), sub(R, "rec"), "rec"));
+  if (D.has.bil) tiles.push(tile("Bilhetes", B.b, v => big(v, "bil"), sub(B, "bil"), "bil"));
+  if (D.has.rec && D.has.bil) tiles.push(tile("Ticket médio", M.b, v => big(v, "tm"), sub(M, "tm"), "tm"));
   const dim = D.has.canal ? "canal" : "rota", all = lines(C[dim], mk);
   if (s) { const top = maxBy(all, "b"); if (top && main.b) tiles.push(tile(`Maior ${dim}`, top.b / main.b * 100, v => nf0.format(v) + "%", `${esc(top.n)} · ${fV(top.b, mk)}`)); }
   else { const top = main.d >= 0 ? maxBy(all.filter(r => r.d != null), "d") : minBy(all.filter(r => r.d != null), "d");
@@ -921,26 +1062,28 @@ function renderTop() {
 }
 
 function renderDim(dim) {
-  const P = dim === "canal" ? "c" : "r", st = S[dim], s = C.single, key = s ? "b" : st.esc === "abs" ? "d" : "p";
-  if (!D.has[st.met === "tm" ? "rec" : st.met] || (st.met === "tm" && !D.has.bil)) st.met = C.met0;
-  const qn = norm(st.q);
-  const pass = r => (s || st.dir === "all" || (st.dir === "up" ? r.d > 0 : r.d < 0)) && (!qn || norm(r.n).includes(qn));
-  let rows = lines(C[dim], st.met).filter(r => r[key] != null && (r.a || r.b) && pass(r)).sort((x, y) => y[key] - x[key]);
+  const P = dim === "canal" ? "c" : "r", st = S[dim], s = C.single, met = C.k;
+  if (dim === "rota" && st.by !== "rota" && D.opts[st.by].length < 2) st.by = "rota";
+  const by = dim === "rota" ? st.by : "canal", [one, many, One] = DIMN[by], map = C.by(by);
+  const asVal = s || st.esc === "val", key = asVal ? "b" : st.esc === "abs" ? "d" : "p", qn = norm(st.q);
+  const ok = r => (asVal || st.dir === "all" || (st.dir === "up" ? r.d > 0 : r.d < 0)) && (!qn || norm(r.n).includes(qn));
+  let rows = lines(map, met).filter(r => r[key] != null && (r.a || r.b) && ok(r)).sort((x, y) => y[key] - x[key]);
   const absMax = Math.max(0, ...rows.map(r => Math.abs(r[key])));
   const hi = dim === "canal" ? new Set(rows.filter(r => Math.abs(r[key]) >= absMax * .12).map(r => r.n))
-    : new Set((s ? rows.slice(0, 5) : [...rows.filter(r => r[key] > 0).slice(0, 5), ...rows.filter(r => r[key] < 0).slice(-4)]).map(r => r.n));
+    : new Set((asVal ? rows.slice(0, 5) : [...rows.filter(r => r[key] > 0).slice(0, 5), ...rows.filter(r => r[key] < 0).slice(-4)]).map(r => r.n));
   const LIM = 24, total = rows.length;
   if (dim === "rota") {
     if (!st.all && total > LIM) { const keep = new Set(rows.slice().sort((x, y) => Math.abs(y[key]) - Math.abs(x[key])).slice(0, LIM)); rows = rows.filter(r => keep.has(r)); }
-    const more = $("#rMore"); more.hidden = total <= LIM; more.textContent = st.all ? "Mostrar só as principais" : `Mostrar todas as ${total} rotas`;
+    const more = $("#rMore"); more.hidden = total <= LIM; more.textContent = st.all ? "Mostrar só os principais" : `Mostrar todos os ${total} ${many}`;
+    $("#rQ").placeholder = by === "rota" ? "Filtrar cidade…" : `Filtrar ${one}…`;
   }
-  const tb = mv(C.T.b, st.met);
+  const tb = mv(C.T.b, met), act = S.f[by].size ? "clique para tirar o filtro" : "clique para filtrar";
   divChart($(`#${P}Chart`), rows.map(r => ({
-    n: r.n, v: r[key], hi: hi.has(r.n), tone: s ? "neu" : null, tip: s ? r.n : `${r.n}: ${fV(r.a, st.met)} → ${fV(r.b, st.met)}`,
-    label: s ? `${fV(r.b, st.met)}${st.met !== "tm" && tb ? `<em>${nf1.format(r.b / tb * 100)}%</em>` : ""}` : st.esc === "abs" ? `${fD(r.d, st.met)}<em>${fPct(r.p)}</em>` : `${fPct(r.p)}<em>${fD(r.d, st.met)}</em>`,
+    n: r.n, v: r[key], hi: hi.has(r.n), tone: asVal ? "neu" : null, fk: by, lg: by === "canal" ? lg(r.n, "sm") : "", tip: (s ? `${r.n}: ${fV(r.b, met)}` : `${r.n}: ${fV(r.a, met)} → ${fV(r.b, met)}`) + " · " + act,
+    label: asVal ? `${fV(r.b, met)}${met !== "tm" && tb ? `<em>${nf1.format(r.b / tb * 100)}%</em>` : s ? "" : `<em>${fPct(r.p)}</em>`}` : st.esc === "abs" ? `${fD(r.d, met)}<em>${fPct(r.p)}</em>` : `${fPct(r.p)}<em>${fD(r.d, met)}</em>`,
   })));
-  $(`#${P}Title`).textContent = insight(dim, st.met);
-  $(`#${P}Sub`).textContent = `${s ? MET[st.met] : "Variação de " + MET[st.met].toLowerCase()} por ${dim}, ${perLabel()}` + (qn ? ` · filtro “${st.q}”` : "");
+  $(`#${P}Title`).textContent = insight(map, many, met);
+  $(`#${P}Sub`).textContent = `${asVal ? MET[met] : "Variação de " + MET[met].toLowerCase()} por ${one}, ${perLabel()}` + (qn ? ` · busca “${st.q}”` : "");
 
   // quem cresceu e quem caiu, em texto (só canais)
   if (dim === "canal") {
@@ -951,19 +1094,19 @@ function renderDim(dim) {
         if (D.has.bil) bits.push(Math.abs(b.p ?? 100) < 1.5 ? `bilhetes estáveis (${fInt(b.a)} → ${fInt(b.b)})` : `bilhetes ${fInt(b.a)} → ${fInt(b.b)} (${fPct(b.p)})`);
         if (t.p != null) bits.push(`TM ${fPct(t.p)}`);
         if (tA && tB) bits.push(`participação de ${nf1.format(r.o.a.rec / tA * 100)}% para ${nf1.format(r.o.b.rec / tB * 100)}%`);
-        return `<li><b>${esc(r.n)}</b> ${bits.join("; ")}.</li>`; };
+        return `<li>${lg(r.n, "sm")}<b>${esc(r.n)}</b> ${bits.join("; ")}.</li>`; };
       const up = all.filter(r => r.d > 0).sort((x, y) => y.d - x.d), dn = all.filter(r => r.d < 0).sort((x, y) => x.d - y.d);
       const rest = (a, n) => (a.length > n ? `<li>Outros ${a.length - n}: ${fD(a.slice(n).reduce((x, r) => x + r.d, 0), "rec")} somados.</li>` : "");
       box.html = `<div><h4 class="up">Cresceram</h4><ul>${up.slice(0, 4).map(li).join("") + rest(up, 4) || "<li>Nenhum canal cresceu.</li>"}</ul></div>
         <div><h4 class="down">Caíram</h4><ul>${dn.slice(0, 4).map(li).join("") + rest(dn, 4) || "<li>Nenhum canal caiu.</li>"}</ul></div>`;
     }
   }
-  const trows = lines(C[dim], C.met0).filter(r => (r.a || r.b) && pass(r)).sort((x, y) => (s ? y.b - x.b : (y.d ?? 0) - (x.d ?? 0)));
-  table($(`#${P}Table`), fullCols(dim === "canal" ? "Canal" : "Rota"), trows, st, st.dir === "all" && !qn ? { n: "Total", o: C.T } : null);
+  const trows = lines(map, met).filter(r => (r.a || r.b) && ok(r)).sort((x, y) => (asVal ? (y.b ?? 0) - (x.b ?? 0) : (y.d ?? 0) - (x.d ?? 0)));
+  table($(`#${P}Table`), fullCols(One), trows, st, st.dir === "all" && !qn ? { n: "Total", o: C.T } : null);
 }
 
 function mixData() {
-  const tA = C.T.a.rec || C.T.a.bil, tB = C.T.b.rec || C.T.b.bil, k = C.met0;
+  const tA = C.T.a.rec || C.T.a.bil, tB = C.T.b.rec || C.T.b.bil, k = C.ka;
   const all = [...C.canal].map(([n, o]) => ({ n, a: tA ? o.a[k] / tA * 100 : 0, b: tB ? o.b[k] / tB * 100 : 0 })).sort((x, y) => Math.max(y.a, y.b) - Math.max(x.a, x.b));
   const g = all.slice(0, 7), o = all.slice(7);
   if (o.length) g.push({ n: "Outros", a: o.reduce((s, r) => s + r.a, 0), b: o.reduce((s, r) => s + r.b, 0), others: o.map(r => r.n) });
@@ -975,22 +1118,22 @@ function renderMix() {
   $("#mixA").textContent = S.A;
   $("#mixChart").html = `<div class="dumb-axis"><span></span><span class="ticks">${ticks.map(t => `<span style="left:${x(t)}%">${t}%</span>`).join("")}</span><span></span></div>` +
     g.map((r, i) => { const d = r.b - r.a, k = Math.abs(d) < .3 ? "" : cls(d);
-      return `<div class="drow2 ${k}" style="--i:${i};--from:${x(r.a)}%"><span class="nm" title="${esc(r.n)}">${esc(r.n)}</span><span class="dtrack"><span class="ln" style="left:${x(Math.min(r.a, r.b))}%;width:${x(Math.abs(d))}%"></span><span class="dot a" style="left:${x(r.a)}%"></span><span class="dot b" style="left:${x(r.b)}%"></span></span><span class="val"><b>${nf1.format(r.b)}%</b> <span class="${k}">(${fPP(d)})</span></span></div>`; }).join("");
+      return `<div class="drow2 ${k}" style="--i:${i};--from:${x(r.a)}%"><span class="nm" title="${esc(r.n)}">${lg(r.n, "sm")}${esc(r.n)}</span><span class="dtrack"><span class="ln" style="left:${x(Math.min(r.a, r.b))}%;width:${x(Math.abs(d))}%"></span><span class="dot a" style="left:${x(r.a)}%"></span><span class="dot b" style="left:${x(r.b)}%"></span></span><span class="val"><b>${nf1.format(r.b)}%</b> <span class="${k}">(${fPP(d)})</span></span></div>`; }).join("");
   const v = g.filter(r => !r.others), up = maxBy(v.map(r => ({ ...r, d: r.b - r.a })), "d"), dn = minBy(v.map(r => ({ ...r, d: r.b - r.a })), "d"), f = r => `${nf1.format(r.a)}% para ${nf1.format(r.b)}%`;
-  $("#mixTitle").textContent = [up && up.d > .3 && `${up.n} foi de ${f(up)} da ${MET[C.met0].toLowerCase()}`, dn && dn.d < -.3 && `${dn.n} caiu de ${f(dn)}`].filter(Boolean).join("; ") || "O mix de canais ficou praticamente estável";
+  $("#mixTitle").textContent = [up && up.d > .3 && `${up.n} foi de ${f(up)} da ${MET[C.ka].toLowerCase()}`, dn && dn.d < -.3 && `${dn.n} caiu de ${f(dn)}`].filter(Boolean).join("; ") || "O mix de canais ficou praticamente estável";
   const oth = g.find(r => r.others);
   $("#mixNote").textContent = (oth ? `Outros = ${oth.others.join(", ")}. ` : "") + "Variação em pontos percentuais (pp).";
 }
 
 function renderMes() {
-  const k = C.met0, idx = C.single ? "b" : S.mes.esc === "abs" ? "d" : "p";
+  const k = C.k, idx = C.single ? "b" : S.mes.esc === "abs" ? "d" : "p";
   const per = n => C.months.map(mo => ({ m: mo.m, ...L(mo.map.get(n) || Z(), k) }));
   const names = [...new Set(C.months.flatMap(mo => [...mo.map.keys()]))].map(n => { const p = per(n); return { n, p, w: p.reduce((s, x) => s + Math.abs(C.single ? x.b : x.d ?? 0), 0), sum: p.reduce((s, x) => s + (C.single ? x.b : x.d ?? 0), 0) }; })
     .filter(r => r.w > 0).sort((x, y) => y.w - x.w).slice(0, 12).sort((x, y) => y.sum - x.sum);
   const tot = { n: "Total", p: C.months.map(mo => ({ m: mo.m, ...L(mo.t, k) })) };
   const vals = [tot, ...names].flatMap(r => r.p.map(x => x[idx]).filter(v => v != null));
   const lo = Math.min(0, ...vals), hi = Math.max(0, ...vals), span = hi - lo || 1, z = -lo / span * 100;
-  $("#mChart").html = [tot, ...names].map((r, i) => `<div class="mrow" style="--i:${i}"><span class="nm" title="${esc(r.n)}"${r === tot ? ' style="color:var(--white);font-weight:600"' : ""}>${esc(r.n)}</span><div class="mbars">${r.p.map(x => {
+  $("#mChart").html = [tot, ...names].map((r, i) => `<div class="mrow" style="--i:${i}"><span class="nm" title="${esc(r.n)}"${r === tot ? ' style="color:var(--white);font-weight:600"' : ""}>${C.mdim === "canal" && r !== tot ? lg(r.n, "sm") : ""}${esc(r.n)}</span><div class="mbars">${r.p.map(x => {
     const v = x[idx];
     if (v == null) return `<div class="mbar"><span class="k">${MONL[x.m]}</span><span class="track"><span class="zero" style="left:${z}%"></span></span><span class="src">sem base</span></div>`;
     const w = Math.abs(v) / span * 100, left = v >= 0 ? z : z - w;
@@ -1005,12 +1148,12 @@ function renderMes() {
   $("#mTitle").textContent = title;
 }
 
-function crRows(canal) { const out = []; for (const [k, o] of C.cr) { const [c, r] = k.split(SEP); if (c === canal) out.push({ n: r, o, ...L(o, C.met0) }); } return out; }
+function crRows(canal) { const out = []; for (const [k, o] of C.cr) { const [c, r] = k.split(SEP); if (c === canal) out.push({ n: r, o, ...L(o, C.k) }); } return out; }
 function renderRPC() {
-  const k = C.met0, s = C.single, all = lines(C.canal, k).sort((x, y) => y.b - x.b).map(r => r.n), def = all.slice(0, 8);
+  const k = C.k, s = C.single, all = lines(C.canal, C.ka).sort((x, y) => y.b - x.b).map(r => r.n), def = all.slice(0, 8);
   const sel = S.rpc.sel ? S.rpc.sel.filter(n => all.includes(n)) : def, isAll = !S.rpc.sel;
   $("#rpcChips").html = `<button type="button" class="chip sm" data-k="" aria-pressed="${isAll}">${all.length > 8 ? "Principais" : "Todos"}</button>` + all.map(n => `<button type="button" class="chip sm" data-k="${esc(n)}" aria-pressed="${!isAll && sel.includes(n)}">${esc(n)}</button>`).join("");
-  $("#rpcN").value = String(S.rpc.n);
+  dd($("#rpcN"), [3, 4, 5, 8].map(n => ({ v: n, l: String(n) })), S.rpc.n, v => { S.rpc.n = v; render(); });
   const N = +S.rpc.n;
   $("#rpcCards").html = sel.map((c, ci) => {
     const rows = crRows(c), ch = L(C.canal.get(c), k);
@@ -1020,8 +1163,8 @@ function renderRPC() {
     const li = (r, col) => { const b = L(r.o, "bil"), v = s ? r.b : r.d;
       return `<div class="rr"><div class="t"><span>${esc(r.n)}</span><b class="${s ? "" : cls(r.d)}">${s ? fV(r.b, k) : fD(r.d, k)}</b></div>
       <div class="m"><i style="width:${Math.abs(v) / mx * 100}%;background:var(--${col})"></i></div>
-      <div class="x"><span>${s ? (D.has.bil && k === "rec" ? fInt(b.b) + " bilhetes" : "") : `${fV(r.a, k)} → ${fV(r.b, k)}${D.has.bil && k === "rec" ? ` · bilhetes ${fInt(b.a)} → ${fInt(b.b)}` : ""}`}</span><span class="${s ? "" : cls(r.d)}">${s ? (ch.b ? nf1.format(r.b / ch.b * 100) + "% do canal" : "") : r.p == null ? "nova" : r.b === 0 ? "sem vendas" : fPct(r.p)}</span></div></div>`; };
-    return `<article class="card" style="--i:${ci}"><div class="card-h"><h3>${esc(c)}</h3><span class="${s ? "" : cls(ch.d)}">${s ? fV(ch.b, k) : `${fD(ch.d, k)} · ${fPct(ch.p)} no canal`}</span></div>
+      <div class="x"><span>${s ? (D.has.bil && k === "rec" ? fInt(b.b) + " bilhetes" : "") : `${fV(r.a, k)} → ${fV(r.b, k)}${D.has.bil && k === "rec" ? ` · bilhetes ${fInt(b.a)} → ${fInt(b.b)}` : ""}`}</span><span class="${s ? "" : cls(r.d)}">${s ? (ch.b && k !== "tm" ? nf1.format(r.b / ch.b * 100) + "% do canal" : "") : r.p == null ? "nova" : r.b === 0 ? "sem vendas" : fPct(r.p)}</span></div></div>`; };
+    return `<article class="card" style="--i:${ci}"><div class="card-h"><h3>${lg(c, "md")}${esc(c)}</h3><span class="${s ? "" : cls(ch.d)}">${s ? fV(ch.b, k) : `${fD(ch.d, k)} · ${fPct(ch.p)} no canal`}</span></div>
       <div class="cols${s ? " one" : ""}"><div class="col"><h4 class="${s ? "" : "up"}">${s ? "Maiores rotas" : "Maiores altas"}</h4>${ups.length ? ups.map(r => li(r, s ? "white" : "teal")).join("") : `<p class="none">Nenhuma alta: ${rows.length} rotas caíram ou ficaram estáveis.</p>`}</div>
       ${s ? "" : `<div class="col"><h4 class="down">Maiores quedas</h4>${dns.length ? dns.map(r => li(r, "red")).join("") : `<p class="none">Nenhuma queda: as ${rows.length} rotas do canal cresceram ou ficaram estáveis.</p>`}</div>`}</div></article>`;
   }).join("");
@@ -1033,26 +1176,54 @@ function renderRPC() {
   for (const [kk, o] of C.cr) { const [c, r] = kk.split(SEP); if (!hc.includes(c)) continue; const v = L(o, k)[key]; if (!v) continue; (routes.get(r) || routes.set(r, {}).get(r))[c] = v; }
   const list = [...routes].map(([n, m]) => ({ n, m, s: Object.values(m).reduce((a, b) => a + b, 0), w: Object.values(m).reduce((a, b) => a + Math.abs(b), 0) })).sort((x, y) => y.w - x.w).slice(0, 16).sort((x, y) => y.s - x.s);
   const hmax = Math.max(1, ...list.flatMap(r => Object.values(r.m).map(Math.abs))), light = document.documentElement.dataset.mode === "light";
-  const short = v => { const a = Math.abs(v); return (s ? "" : sg(v)) + (k === "bil" ? nf0.format(a) : a >= 1e6 ? nf1.format(a / 1e6) + "M" : a >= 1000 ? nf1.format(a / 1000) + "k" : nf0.format(a)); };
-  $("#heat").html = `<thead><tr><th></th>${hc.map(c => `<th class="eyebrow">${esc(c)}</th>`).join("")}<th class="eyebrow" style="text-align:right">Soma</th></tr></thead><tbody>` +
+  const short = v => { const a = Math.abs(v); return (s ? "" : sg(v)) + (k === "bil" ? nf0.format(a) : k === "tm" ? nf1.format(a) : a >= 1e6 ? nf1.format(a / 1e6) + "M" : a >= 1000 ? nf1.format(a / 1000) + "k" : nf0.format(a)); };
+  $("#heat").html = `<thead><tr><th></th>${hc.map(c => `<th class="eyebrow">${lg(c, "sm")}${esc(c)}</th>`).join("")}<th class="eyebrow" style="text-align:right">Soma</th></tr></thead><tbody>` +
     list.map(r => `<tr><td class="r">${esc(r.n)}</td>${hc.map(c => { const v = r.m[c]; if (v == null) return `<td class="c">·</td>`;
       const al = (.14 + .76 * Math.sqrt(Math.abs(v) / hmax)) * (light ? .85 : 1), rgb = s ? "143,143,139" : v > 0 ? "79,158,161" : "236,90,85";
-      return `<td class="c v" style="background:rgba(${rgb},${al.toFixed(2)})" data-tip="${esc(c)} · ${esc(r.n)}: ${s ? fV(v, k) : fD(v, k)}">${short(v)}</td>`; }).join("")}<td class="tot ${s ? "" : cls(r.s)}">${tight ? short(r.s) : s ? fV(r.s, k) : fD(r.s, k)}</td></tr>`).join("") + "</tbody>";
+      return `<td class="c v" style="background:rgba(${rgb},${al.toFixed(2)})" data-tip="${esc(c)} · ${esc(r.n)}: ${s ? fV(v, k) : fD(v, k)}">${short(v)}</td>`; }).join("")}<td class="tot ${s || k === "tm" ? "" : cls(r.s)}">${k === "tm" ? "–" : tight ? short(r.s) : s ? fV(r.s, k) : fD(r.s, k)}</td></tr>`).join("") + "</tbody>";
   const mg = migration();
-  $("#heatTitle").textContent = mg ? `${mg.n}: ${mg.up} ganha ${fV(mg.g, k)} enquanto ${mg.dn} perde ${fV(Math.abs(mg.l), k)}` : s ? `Receita por rota e canal em ${S.B}` : "Onde cada canal mexeu em cada rota";
+  $("#heatTitle").textContent = k === "tm" ? "Onde o ticket médio mudou em cada rota e canal" : mg ? `${mg.n}: ${mg.up} ganha ${fV(mg.g, k)}${k === "bil" ? " bilhetes" : ""} enquanto ${mg.dn} perde ${fV(Math.abs(mg.l), k)}` : s ? `${MET[k]} por rota e canal em ${S.B}` : "Onde cada canal mexeu em cada rota";
 }
 // rota em que um canal ganha e outro perde ao mesmo tempo (possível troca entre canais)
 function migration() {
   if (C.single || !D.has.canal || !D.has.rota) return null;
   const by = new Map();
-  for (const [kk, o] of C.cr) { const [c, r] = kk.split(SEP), d = L(o, C.met0).d; if (d) (by.get(r) || by.set(r, []).get(r)).push({ c, d }); }
+  for (const [kk, o] of C.cr) { const [c, r] = kk.split(SEP), d = L(o, C.ka).d; if (d) (by.get(r) || by.set(r, []).get(r)).push({ c, d }); }
   let best = null;
   for (const [n, a] of by) { const up = maxBy(a, "d"), dn = minBy(a, "d"); if (up.d > 0 && dn.d < 0) { const sc = Math.min(up.d, -dn.d); if (!best || sc > best.sc) best = { n, up: up.c, g: up.d, dn: dn.c, l: dn.d, sc }; } }
   return best;
 }
 
+// lado a lado: os itens escolhidos em todas as métricas
+function renderCmp() {
+  const st = S.cmp, s = C.single, ka = C.ka, dims = Object.keys(DIMN).filter(k => D.opts[k].length > 1); if (!dims.includes(st.by)) st.by = dims[0];
+  $("#cmpBy").html = dims.map(k => `<button type="button" data-v="${k}">${DIMN[k][2]}</button>`).join("");
+  const map = C.by(st.by), all = [...map].filter(([, o]) => o.a[ka] || o.b[ka]).sort((x, y) => y[1].b[ka] - x[1].b[ka]).map(x => x[0]);
+  let sel = (st.sel[st.by] || []).filter(n => map.has(n)); if (!sel.length) sel = all.slice(0, 3);
+  st.cur = sel;
+  const shown = [...new Set([...all.slice(0, 8), ...sel])], rest = all.filter(n => !shown.includes(n));
+  $("#cmpChips").html = shown.map(n => `<button type="button" class="chip sm" data-n="${esc(n)}" aria-pressed="${sel.includes(n)}">${st.by === "canal" ? lg(n, "sm") : ""}${esc(n)}</button>`).join("");
+  $("#cmpMore").hidden = !rest.length;
+  dd($("#cmpMore"), rest.map(n => ({ v: n, l: n })), null, v => { st.sel[st.by] = [...sel, v].slice(-6); render(); }, `Outros ${DIMN[st.by][1]}…`);
+  const T = C.T, items = sel.map(n => ({ n, o: map.get(n) }));
+  const val = (o, k) => (k !== "sh" ? L(o, k) : { a: s || !T.a[ka] ? null : o.a[ka] / T.a[ka] * 100, b: T.b[ka] ? o.b[ka] / T.b[ka] * 100 : null });
+  const mets = [D.has.rec && "rec", D.has.bil && "bil", D.has.rec && D.has.bil && "tm", "sh"].filter(Boolean);
+  $("#cmpGrid").html = mets.map((k, pi) => {
+    const rows = items.map(it => { const x = val(it.o, k); return { n: it.n, a: x.a, b: x.b, d: x.a == null || x.b == null ? null : x.b - x.a, p: x.p }; });
+    const mx = Math.max(1e-9, ...rows.flatMap(r => [r.a || 0, r.b || 0])), w = v => Math.max(0, (v || 0) / mx * 100), f = v => (k === "sh" ? (v == null ? "–" : nf1.format(v) + "%") : fV(v, k));
+    return `<div class="cmp-p" style="--i:${pi}"><h4>${k === "sh" ? "Participação em " + MET[ka].toLowerCase() : MET[k]}</h4>${rows.map(r => `<div class="cr ${s ? "" : cls(r.d)}"><div class="t"><span>${st.by === "canal" ? lg(r.n, "sm") : ""}${esc(r.n)}</span><b>${f(r.b)}</b></div><i class="bb" style="width:${w(r.b)}%"></i>${s ? "" : `<i class="ba" style="width:${w(r.a)}%"></i><div class="x"><span>era ${f(r.a)}</span><span class="${cls(r.d)}">${r.d == null ? "" : k === "sh" ? fPP(r.d) : fPct(r.p)}</span></div>`}</div>`).join("")}</div>`;
+  }).join("");
+  const gr = items.map(it => ({ n: it.n, ...L(it.o, ka) })).filter(r => r.p != null), tm = items.map(it => ({ n: it.n, ...L(it.o, "tm") })).filter(r => r.b != null);
+  const fast = maxBy(gr, "p"), rich = D.has.rec && D.has.bil ? maxBy(tm, "b") : null, big = maxBy(items.map(it => ({ n: it.n, b: it.o.b[ka] })), "b");
+  // junta os destaques por item: "App lidera em receita, variação (+127%) e ticket médio (R$ 151)"
+  const wins = new Map(), win = (r, t) => r && (wins.get(r.n) || wins.set(r.n, []).get(r.n)).push(t);
+  if (items.length > 1) { win(big, MET[ka].toLowerCase()); win(fast, `variação (${fPct(fast?.p)})`); win(rich, `ticket médio (${fV(rich?.b, "tm")})`); }
+  const and = a => (a.length > 1 ? a.slice(0, -1).join(", ") + " e " + a.at(-1) : a[0]);
+  $("#cmpTitle").textContent = [...wins].map(([n, a]) => `${n} lidera em ${and(a)}`).join("; ") || "Escolha dois ou mais itens para comparar";
+}
+
 function renderConcl() {
-  const k = C.met0, T = L(C.T, k), cards = [], notes = [], card = (tag, h, p) => cards.push(`<article style="--i:${cards.length}"><span class="tag" style="background:var(--${tag})"></span><h3>${esc(h)}</h3><p>${p}</p></article>`);
+  const k = C.ka, T = L(C.T, k), cards = [], notes = [], card = (tag, h, p) => cards.push(`<article style="--i:${cards.length}"><span class="tag" style="background:var(--${tag})"></span><h3>${esc(h)}</h3><p>${p}</p></article>`);
   const tA = C.T.a[k], tB = C.T.b[k];
   if (D.has.canal && tA && tB) {
     const sh = lines(C.canal, k).map(r => ({ n: r.n, a: r.a / tA * 100, b: r.b / tB * 100 })), top = maxBy(sh, "b");
@@ -1081,7 +1252,7 @@ function renderConcl() {
     for (const x of vb) if (mx.v > 0 && x.v / mx.v < .5) notes.push(`<b>${MONF[x.m]} parece incompleto:</b> equivale a ${nf0.format(x.v / mx.v * 100)}% de ${MONF[mx.m].toLowerCase()} em ${esc(S.B)}${mx.va ? ` e ${nf0.format(x.va / (maxBy(vb, "va").va || 1) * 100)}% em ${esc(S.A)}` : ""}; a comparação presume o mesmo corte nos dois períodos.`);
   }
   if (D.subs.length && D.subs.length <= 3) notes.push(`<b>Janela curta:</b> a base cobre só ${D.subs.map(m => MONF[m].toLowerCase()).join(" e ")}; as tendências não representam o ano.`);
-  const inScope = D.recs.filter(r => (r.g === S.A || r.g === S.B) && (S.sub == null || r.s === S.sub));
+  const inScope = D.recs.filter(r => (r.g === S.A || r.g === S.B) && pass(r));
   const neg = inScope.filter(r => r.rec < 0);
   if (neg.length) notes.push(`<b>${neg.length} ${neg.length > 1 ? "linhas negativas" : "linha negativa"}</b> (${fD(neg.reduce((s, r) => s + r.rec, 0), "rec")}), provavelmente cancelamentos ou estornos; mantidas no cálculo.`);
   if (D.has.canal) {
@@ -1095,8 +1266,13 @@ function renderConcl() {
 
 function render() {
   compute();
-  for (const dim of ["canal", "rota"]) document.querySelectorAll(`[data-s="${dim}.met"] button`).forEach(b => (b.hidden = b.dataset.v === "tm" ? !(D.has.rec && D.has.bil) : !D.has[b.dataset.v]));
+  document.querySelectorAll('[data-s="g.met"] button').forEach(b => (b.hidden = b.dataset.v === "tm" ? !(D.has.rec && D.has.bil) : !D.has[b.dataset.v]));
+  document.querySelectorAll('[data-s="rota.by"] button').forEach(b => (b.hidden = b.dataset.v !== "rota" && D.opts[b.dataset.v].length < 2));
+  document.querySelectorAll('[data-s="rota.by"]').forEach(e => (e.hidden = D.opts.org.length < 2 && D.opts.dst.length < 2));
   document.querySelectorAll(".cmp-only").forEach(e => (e.hidden = C.single));
+  $("#nodata").hidden = !C.none; $("#kpiSec").hidden = $("#mods").hidden = C.none;
+  syncFilters();
+  if (C.none) { $("#per").textContent = perLabel(); $("#ctx").textContent = ["Revenue Management", filterLabel()].filter(Boolean).join(" · "); $("#lead").html = "Nenhum dado com esses filtros."; thumbs(); return; }
   renderTop();
   const on = MODS.filter(([k]) => avail(k));
   $("#modChips").html = on.map(([k, n]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${!S.hide.includes(k)}">${n}</button>`).join("");
@@ -1107,6 +1283,7 @@ function render() {
   if (vis("mes")) renderMes();
   if (vis("rotas")) renderDim("rota");
   if (vis("rpc")) renderRPC();
+  if (vis("cmp")) renderCmp();
   if (vis("concl")) renderConcl();
   document.querySelectorAll(".seg[data-s]").forEach(seg => { const [a, b] = seg.dataset.s.split("."); seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === S[a][b])); });
   $("#files").html = D.sources.map((s, i) => `<div class="file"><span title="${esc(s.file)}">${esc(s.file)}${s.sheet && s.name === s.sheet ? " · " + esc(s.sheet) : ""}</span><small>${valid(s) ? nf0.format(s.rows.length) + " linhas" : "colunas?"}</small><button type="button" data-rm="${i}" aria-label="Remover">×</button></div>`).join("");
@@ -1127,19 +1304,31 @@ addEventListener("dragover", e => e.preventDefault());
 addEventListener("drop", e => { e.preventDefault(); dragN = 0; $("#veil").classList.remove("on"); const f = [...(e.dataTransfer?.files || [])]; if (f.length) ingest(f); });
 
 document.addEventListener("click", e => {
+  const db = e.target.closest(".dd-b"); if (db) return ddOpen(db.parentElement);
+  const it = e.target.closest(".dd .it");
+  if (it) {
+    const d = it.closest(".dd"), k = d.dataset.f;
+    if (k) { if (it.dataset.clear != null) S.f[k].clear(); else toggleSet(S.f[k], D.opts[k][+it.dataset.i]); return render(); } // filtro: fica aberto para marcar vários
+    ddClose(); return d._on(d._opts[+it.dataset.i].v);
+  }
+  if (!e.target.closest(".dd")) ddClose();
+  const dr = e.target.closest(".drow[data-fk]");
+  if (dr) { toggleSet(S.f[dr.dataset.fk], dr.dataset.fv); tipOff(); return render(); }
   const sb = e.target.closest(".seg[data-s] button");
-  if (sb) { const [a, b] = sb.parentElement.dataset.s.split("."); S[a][b] = sb.dataset.v; if (b === "met") S[a].sort = null; return render(); }
+  if (sb) { const [a, b] = sb.parentElement.dataset.s.split("."); S[a][b] = sb.dataset.v; if (b === "by") { S[a].sort = null; S[a].q = ""; if (a === "rota") $("#rQ").value = ""; } return render(); }
   if (e.target.closest("[data-theme-toggle]")) { const r = document.documentElement; vt(() => { r.dataset.mode = r.dataset.mode === "light" ? "dark" : "light"; try { localStorage.setItem("revenue-mode", r.dataset.mode); } catch (x) {} if (D.recs.length) render(); }); return; }
   const m = $("#menu"); if (m.open && !m.contains(e.target)) m.open = false;
 });
 try { document.documentElement.dataset.mode = localStorage.getItem("revenue-mode") || "dark"; } catch (x) { document.documentElement.dataset.mode = "dark"; }
-$("#selA").onchange = e => { S.A = e.target.value; render(); };
-$("#selB").onchange = e => { S.B = e.target.value; if (S.A === S.B) S.A = D.groups.find(g => g !== S.B) ?? null; render(); };
-$("#subs").onclick = e => { const b = e.target.closest("button"); if (b) { S.sub = b.dataset.m ? +b.dataset.m : null; render(); } };
+addEventListener("keydown", e => { if (e.key === "Escape") ddClose(); });
+$("#subs").onclick = e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.m) { toggleSet(S.f.s, +b.dataset.m); if (S.f.s.size === D.subs.length) S.f.s.clear(); } else S.f.s.clear(); render(); };
+$("#kpis").onclick = e => { const b = e.target.closest("button.kpi"); if (b) { S.g.met = b.dataset.k; render(); } };
+$("#fClear").onclick = () => { for (const k in S.f) S.f[k].clear(); render(); };
+$("#filters").addEventListener("input", e => { if (!e.target.matches(".fq")) return; const q = norm(e.target.value); e.target.parentElement.querySelectorAll(".ck").forEach(b => (b.hidden = !!q && !norm(b.textContent).includes(q))); });
+$("#cmpChips").onclick = e => { const b = e.target.closest("button"); if (!b) return; const st = S.cmp, n = b.dataset.n, cur = st.cur || []; const nx = cur.includes(n) ? cur.filter(x => x !== n) : [...cur, n].slice(-6); if (nx.length) { st.sel[st.by] = nx; render(); } };
 $("#modChips").onclick = e => { const b = e.target.closest("button"); if (!b) return; const k = b.dataset.k; S.hide = S.hide.includes(k) ? S.hide.filter(x => x !== k) : [...S.hide, k]; render(); };
 $("#rQ").oninput = e => { S.rota.q = e.target.value; render(); };
 $("#rMore").onclick = () => { S.rota.all = !S.rota.all; render(); };
-$("#rpcN").onchange = e => { S.rpc.n = +e.target.value; render(); };
 $("#rpcChips").onclick = e => {
   const b = e.target.closest("button"); if (!b) return; const k = b.dataset.k;
   if (!k) S.rpc.sel = null; else if (!S.rpc.sel) S.rpc.sel = [k]; else { S.rpc.sel = S.rpc.sel.includes(k) ? S.rpc.sel.filter(x => x !== k) : [...S.rpc.sel, k]; if (!S.rpc.sel.length) S.rpc.sel = null; }
@@ -1179,11 +1368,13 @@ addEventListener("scroll", () => { tipOff(); const h = document.documentElement.
 function openMap(msg) {
   const src = D.sources.find(s => !valid(s)) || D.sources[0]; if (!src) return;
   if (msg) $("#mapMsg").textContent = msg;
-  $("#mapGrid").html = ROLES.map(([k, l]) => `<label for="mp-${k}">${l}</label><select id="mp-${k}" data-k="${k}"><option value="">—</option>${src.headers.map((h, i) => (h ? `<option value="${i}"${src.map[k] === i ? " selected" : ""}>${esc(h)}</option>` : "")).join("")}</select>`).join("");
+  $("#mapGrid").innerHTML = ROLES.map(([k, l]) => `<span>${l}</span><div class="dd" data-k="${k}"></div>`).join("");
+  const hs = [{ v: -1, l: "—" }, ...src.headers.map((h, i) => h && { v: i, l: h }).filter(Boolean)];
+  $("#mapGrid").querySelectorAll(".dd").forEach(el => { const set = v => dd(el, hs, v, set); set(src.map[el.dataset.k] ?? -1); });
   $("#mapDlg").showModal();
   $("#mapOk").onclick = () => {
     const byName = {};
-    $("#mapGrid").querySelectorAll("select").forEach(s => { if (s.value !== "") byName[s.dataset.k] = src.headers[+s.value]; });
+    $("#mapGrid").querySelectorAll(".dd").forEach(el => { if (el._val >= 0) byName[el.dataset.k] = src.headers[el._val]; });
     for (const s of D.sources) { // a mesma escolha vale para os outros arquivos com as mesmas colunas
       const m = {}; for (const [k, h] of Object.entries(byName)) { const i = s.headers.indexOf(h); if (i >= 0) m[k] = i; }
       if (s === src || Object.keys(m).length === Object.keys(byName).length) { s.map = m; s.wide = []; }
@@ -1207,7 +1398,7 @@ function sheetOf(dim, first) {
 function buildXLSX() {
   if (!window.XLSX) return toast("Exportação indisponível sem internet.");
   const wb = XLSX.utils.book_new(), add = (n, aoa) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), n), r2 = v => (v == null ? null : Math.round(v * 100) / 100);
-  const res = [["Vendas por canal e rota", perLabel()], [], ["Indicador", ...(C.single ? [] : [S.A]), S.B, ...(C.single ? [] : ["Δ", "Δ %"])]];
+  const res = [["Vendas por canal e rota", perLabel(), filterLabel()], [], ["Indicador", ...(C.single ? [] : [S.A]), S.B, ...(C.single ? [] : ["Δ", "Δ %"])]];
   for (const k of ["rec", "bil", "tm"]) { const x = L(C.T, k); res.push([MET[k], ...(C.single ? [] : [r2(x.a)]), r2(x.b), ...(C.single ? [] : [r2(x.d), r2(x.p)])]); }
   if (C.dec) res.push([], ["Efeito volume", r2(C.dec.vol)], ["Efeito preço", r2(C.dec.pre)], ["Variação total", r2(C.dec.tot)]);
   add("Resumo", res);
@@ -1219,8 +1410,21 @@ function buildXLSX() {
     ...C.months.flatMap(mo => [...mo.map].map(([n, o]) => { const x = L(o, "rec"), b = L(o, "bil"); return [n, MONF[mo.m], r2(x.a), r2(x.b), r2(x.d), r2(x.p), b.a, b.b]; }))]);
   XLSX.writeFile(wb, stamp() + ".xlsx");
 }
+// logo como PNG (o PowerPoint não lê SVG em todas as versões); devolve null se não houver ou não carregar
+async function logoPNG(name) {
+  const f = logoFile(name); if (!f) return null;
+  try {
+    const img = new Image(); img.src = "logos/" + f; await img.decode();
+    const c = document.createElement("canvas"); c.width = 416; c.height = 240; const x = c.getContext("2d");
+    x.fillStyle = "#fff"; x.fillRect(0, 0, 416, 240);
+    if (f.endsWith(".svg")) { const w = img.naturalWidth || 416, h = img.naturalHeight || 240, r = Math.min(360 / w, 200 / h); x.drawImage(img, (416 - w * r) / 2, (240 - h * r) / 2, w * r, h * r); }
+    else x.drawImage(img, 0, 0, 416, 240);
+    return c.toDataURL("image/png");
+  } catch (e) { return null; }
+}
 async function buildPPTX() {
   if (!window.PptxGenJS) return toast("PowerPoint indisponível sem internet.");
+  const LG = new Map(); for (const n of C.canal.keys()) LG.set(n, await logoPNG(n));
   const light = document.documentElement.dataset.mode === "light", BG = light ? "F7F7F3" : "000000", FG = light ? "151514" : "F5F5F2", MU = light ? "6A6A65" : "8F8F8B", LN = light ? "D5D5CF" : "2A2A28", TE = "4F9EA1", RE = "EC5A55", F = "Segoe UI";
   const p = new PptxGenJS(); p.layout = "LAYOUT_WIDE";
   const slide = (eyebrow, title) => { const s = p.addSlide(); s.background = { color: BG };
@@ -1243,14 +1447,31 @@ async function buildPPTX() {
     r.addText(fV(x.b, k), { x: X, y: 2.7, w: 3.9, h: .9, fontFace: F, fontSize: 36, bold: true, color: FG });
     if (!C.single) r.addText([{ text: fPct(x.p) + "  ", options: { color: col(x.d), bold: true } }, { text: "era " + fV(x.a, k), options: { color: MU } }], { x: X, y: 3.6, w: 3.9, h: .4, fontFace: F, fontSize: 13 }); });
   if (C.dec) r.addText([{ text: "Efeito volume ", options: { color: MU } }, { text: fD(C.dec.vol, "rec"), options: { color: col(C.dec.vol), bold: true } }, { text: "     Efeito preço ", options: { color: MU } }, { text: fD(C.dec.pre, "rec"), options: { color: col(C.dec.pre), bold: true } }], { x: .5, y: 4.6, w: 12, h: .5, fontFace: F, fontSize: 16 });
+  // canais em destaque: um cartão por canal, com a logo ao lado dos números dele
+  if (D.has.canal) {
+    const ka = C.ka, top = lines(C.canal, ka).filter(x => x.a || x.b).sort((x, y) => (C.single ? y.b - x.b : Math.abs(y.d ?? 0) - Math.abs(x.d ?? 0))).slice(0, 6);
+    const sl = slide("Canais em destaque · " + perLabel(), insight(C.canal, "canais", ka));
+    top.forEach((x, i) => {
+      const X = .5 + (i % 3) * 4.15, Y = 2.15 + Math.floor(i / 3) * 2.45, img = LG.get(x.n), b = L(x.o, "bil"), t = L(x.o, "tm");
+      sl.addShape(p.ShapeType.roundRect, { x: X, y: Y, w: 3.95, h: 2.25, fill: { color: light ? "FFFFFF" : "0B0B0B" }, line: { color: LN, width: .75 }, rectRadius: .08 });
+      if (img) sl.addImage({ data: img, x: X + .22, y: Y + .22, w: .83, h: .48 });
+      sl.addText(x.n, { x: X + (img ? 1.18 : .22), y: Y + .2, w: 3.95 - (img ? 1.4 : .44), h: .52, fontFace: F, fontSize: 15, bold: true, color: FG, valign: "middle", fit: "shrink" });
+      sl.addText(fV(x.b, ka), { x: X + .22, y: Y + .85, w: 3.5, h: .55, fontFace: F, fontSize: 26, bold: true, color: FG });
+      sl.addText(C.single ? [{ text: MET[ka], options: { color: MU } }] : [{ text: fPct(x.p) + "  ", options: { color: col(x.d), bold: true } }, { text: fD(x.d, ka) + " · era " + fV(x.a, ka), options: { color: MU } }], { x: X + .22, y: Y + 1.38, w: 3.5, h: .32, fontFace: F, fontSize: 11 });
+      const det = [D.has.bil && `Bilhetes ${fInt(b.b)}${C.single || b.p == null ? "" : " (" + fPct(b.p) + ")"}`, D.has.rec && D.has.bil && `TM ${fV(t.b, "tm")}${C.single || t.p == null ? "" : " (" + fPct(t.p) + ")"}`].filter(Boolean).join("   ·   ");
+      if (det) sl.addText(det, { x: X + .22, y: Y + 1.72, w: 3.5, h: .32, fontFace: F, fontSize: 10, color: MU });
+    });
+  }
   // tabelas
-  const tbl = (dim, name, n) => { if (!D.has[dim]) return; const k = C.met0, rows = lines(C[dim], k).filter(x => x.a || x.b).sort((x, y) => (C.single ? y.b - x.b : (y.d ?? 0) - (x.d ?? 0)));
+  const tbl = (dim, name, n) => { if (!D.has[dim]) return; const k = C.k, rows = lines(C[dim], k).filter(x => x.a || x.b).sort((x, y) => (C.single ? y.b - x.b : (y.d ?? 0) - (x.d ?? 0)));
     const pickRows = rows.length > n ? [...rows.slice(0, Math.ceil(n / 2)), ...rows.slice(-Math.floor(n / 2))] : rows;
-    const s = slide(name + " · " + perLabel(), insight(dim, k)), hd = t => ({ text: t, options: { color: MU, fontSize: 9, bold: true, border: [{ type: "none" }, { type: "none" }, { pt: 1, color: LN }, { type: "none" }] } });
+    const s = slide(name + " · " + perLabel(), insight(C[dim], DIMN[dim][1], k)), hd = t => ({ text: t, options: { color: MU, fontSize: 9, bold: true, border: [{ type: "none" }, { type: "none" }, { pt: 1, color: LN }, { type: "none" }] } });
     const cell = (t, o = {}) => ({ text: t, options: { color: FG, fontSize: 11, border: [{ type: "none" }, { type: "none" }, { pt: .5, color: LN }, { type: "none" }], ...o } });
     s.addTable([[hd(name.replace(/s$/, "").replace(/i$/, "l")), ...(C.single ? [] : [hd(S.A)]), hd(S.B), ...(C.single ? [] : [hd("Δ"), hd("Δ %")])].map((h, i) => (i ? { ...h, options: { ...h.options, align: "right" } } : h)),
       ...pickRows.map(x => [cell(x.n), ...(C.single ? [] : [cell(fV(x.a, k), { align: "right" })]), cell(fV(x.b, k), { align: "right" }), ...(C.single ? [] : [cell(fD(x.d, k), { align: "right", color: col(x.d), bold: true }), cell(fPct(x.p), { align: "right", color: col(x.d) })])])],
-      { x: .5, y: 2.1, w: 12.3, fontFace: F, rowH: .3, colW: C.single ? [8.3, 4] : [5.1, 1.9, 1.9, 1.9, 1.5] }); };
+      { x: .5, y: 2.1, w: 12.3, fontFace: F, rowH: .3, colW: C.single ? [8.3, 4] : [5.1, 1.9, 1.9, 1.9, 1.5] });
+    // logo de cada canal à esquerda da linha (as tabelas do PowerPoint não aceitam imagem dentro da célula)
+    if (dim === "canal") pickRows.forEach((x, i) => { const img = LG.get(x.n); if (img) s.addImage({ data: img, x: .06, y: 2.1 + .3 * (i + 1) + .045, w: .36, h: .21 }); }); };
   tbl("canal", "Canais", 12); tbl("rota", "Rotas", 14);
   // conclusões
   const ins = [...document.querySelectorAll("#ins article")].map(a => ({ h: a.querySelector("h3").textContent, p: a.querySelector("p").textContent }));
@@ -1269,14 +1490,14 @@ $("#pdf").onclick = () => { document.querySelectorAll(".rv").forEach(e => e.clas
 const HEAD = ["Canal", "Rota", "Ano", "Mês", "Receita", "Bilhetes"];
 function demoAOA() {
   // dados inventados, só para mostrar o painel: canal [peso 2025, crescimento, ticket 2025, Δ ticket]
-  const Cn = [["Site", 330, -.08, 146, -.1], ["App", 230, .62, 168, -.06], ["Agência parceira", 186, .07, 136, -.02], ["Agência própria", 127, -.06, 134, -.05], ["Outlet", 28, .8, 64, 0], ["Clube", 22, .18, 93, .01], ["Totem", 5, 1.1, 170, .04], ["Marketplace", 3, 1.4, 120, -.3]];
+  const Cn = [["Site oficial", 330, -.08, 146, -.1], ["App", 230, .62, 168, -.06], ["Agência parceira", 186, .07, 136, -.02], ["Agência própria", 127, -.06, 134, -.05], ["Outlet", 28, .8, 64, 0], ["Clube Giro", 22, .18, 93, .01], ["Totem", 5, 1.1, 170, .04], ["Wemobi", 3, 1.4, 120, -.3]];
   const Rt = [["Curitiba › Porto Alegre", 183, .3], ["Porto Alegre › Curitiba", 189, .16], ["Porto Alegre › Joinville", 101, .3], ["Joinville › Porto Alegre", 115, .18], ["Porto Alegre › Balneário Camboriú", 81, .23], ["Balneário Camboriú › Porto Alegre", 90, .09], ["Araranguá › Curitiba", 30, .03], ["Curitiba › Araranguá", 23, -.02], ["Curitiba › Torres", 19, .01], ["Torres › Curitiba", 20, -.15], ["Joinville › Osório", 11, .2], ["Osório › Joinville", 11, -.2], ["Curitiba › Osório", 22, -.24], ["Osório › Curitiba", 22, -.31]];
   const h = s => { let x = 2166136261; for (const c of s) x = Math.imul(x ^ c.charCodeAt(0), 16777619); return ((x >>> 0) % 1000) / 1000; }; // ruído determinístico 0..1
   const rows = [HEAD], tR = Rt.reduce((s, r) => s + r[1], 0);
   for (const [c, w, g, tk, dtk] of Cn) for (const [r, rw, rg] of Rt) for (const [mes, mw, mg] of [["Setembro", .78, 0], ["Outubro", .22, .12]]) {
     if (w < 10 && h(c + r) < .45) continue; // canais pequenos não vendem todas as rotas
     const base = w * 1000 * rw / tR * mw * (.7 + .6 * h(c + r + mes)), t25 = tk * (.9 + .2 * h(r + c));
-    const grow = (1 + g + mg * (g > 0 ? 1 : .6)) * (1 + rg * (.5 + h(r + c + "g"))) * (c === "App" && r === "Curitiba › Porto Alegre" ? 1.6 : 1) * (c === "Site" && r === "Curitiba › Porto Alegre" ? .62 : 1);
+    const grow = (1 + g + mg * (g > 0 ? 1 : .6)) * (1 + rg * (.5 + h(r + c + "g"))) * (c === "App" && r === "Curitiba › Porto Alegre" ? 1.6 : 1) * (c === "Site oficial" && r === "Curitiba › Porto Alegre" ? .62 : 1);
     const r26 = base * grow, t26 = t25 * (1 + dtk);
     rows.push([c, r, 2025, mes, Math.round(base * 100) / 100, Math.max(1, Math.round(base / t25))], [c, r, 2026, mes, Math.round(r26 * 100) / 100, Math.max(1, Math.round(r26 / t26))]);
   }
@@ -1284,7 +1505,7 @@ function demoAOA() {
 }
 $("#demo").onclick = () => { const d = detect(demoAOA()); D.sources = [{ ...d, file: "Exemplo (dados fictícios)", name: "Exemplo" }]; rebuild(); };
 $("#tpl").onclick = () => {
-  const csv = [HEAD, ["App", "Curitiba › Porto Alegre", 2025, "Setembro", "31800,50", 243], ["App", "Curitiba › Porto Alegre", 2026, "Setembro", "82100,00", 680], ["Site", "Porto Alegre › Curitiba", 2025, "Setembro", "55400,00", 380], ["Site", "Porto Alegre › Curitiba", 2026, "Setembro", "49900,00", 371]].map(r => r.join(";")).join("\r\n");
+  const csv = [HEAD, ["App", "Curitiba › Porto Alegre", 2025, "Setembro", "31800,50", 243], ["App", "Curitiba › Porto Alegre", 2026, "Setembro", "82100,00", 680], ["Site oficial", "Porto Alegre › Curitiba", 2025, "Setembro", "55400,00", 380], ["Site oficial", "Porto Alegre › Curitiba", 2026, "Setembro", "49900,00", 371]].map(r => r.join(";")).join("\r\n");
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" })); a.download = "modelo-vendas-canal-rota.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 };
 </script>
